@@ -1,0 +1,37 @@
+# --- Python Core ---
+# File biên dịch của Python (Không cần thiết trên Git)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Virtual Environments ---
+# Môi trường ảo (Mỗi máy tự cài thư viện riêng, không up lên)
+venv/
+env/
+.venv/
+.env
+
+# --- IDE / Editor Settings ---
+# Cấu hình riêng của VS Code, PyCharm (Tránh xung đột setting cá nhân)
+.vscode/
+.idea/
+*.swp
+
+# --- OS Generated Files ---
+# File rác của hệ điều hành
+.DS_Store
+Thumbs.db
+
+# --- Project Specific ---
+# QUAN TRỌNG: Không up file save game của người chơi lên Git
+# Để mỗi người test game sẽ có file save riêng, không ghi đè nhau
+data/save.json
+
+# --- PyInstaller (Nếu đóng gói file exe) ---
+# Các thư mục tạm khi build file exe
+build/
+dist/
+*.spec
+
+# --- Logs & Errors ---
+*.log
