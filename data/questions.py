@@ -153,6 +153,46 @@ def get_level_4_questions(num_questions=20):
 
 
 # --- Level 5: Phân số cơ bản (rút gọn, quy đồng, cộng trừ) ---
+from math import gcd
+from fractions import Fraction
+
+def _create_fraction_options(correct_frac, num_options=4):
+    """
+    Tạo các đáp án dạng phân số (dưới dạng chuỗi 'a/b') xung quanh đáp án đúng
+    """
+    num, den = correct_frac.numerator, correct_frac.denominator
+    options = [correct_frac]
+
+    while len(options) < num_options:
+        # Tạo phân số sai gần đúng
+        offset = random.randint(-5, 5)
+        if offset == 0:
+            continue
+        wrong_num = num + offset
+        wrong_den = den + random.randint(-3, 3)
+
+        if wrong_den <= 1:
+            wrong_den = den  # tránh mẫu âm hoặc bằng 1 sai
+
+        wrong_g = gcd(wrong_num, wrong_den)
+        wrong_frac = Fraction(wrong_num // wrong_g, wrong_den // wrong_g)
+
+        # Tránh trùng
+        if wrong_frac not in options and wrong_frac != correct_frac:
+            options.append(wrong_frac)
+
+    # Nếu chưa đủ thì thêm bừa vài cái sai
+    while len(options) < num_options:
+        fake = Fraction(random.randint(1, 20), random.randint(2, 20))
+        if fake not in options:
+            options.append(fake)
+
+    random.shuffle(options)
+    # Chuyển thành chuỗi
+    return [f"{f.numerator}/{f.denominator}" for f in options]
+
+
+# --- Level 5: Phân số cơ bản (HOÀN CHỈNH - ĐÃ SỬA HOÀN TOÀN) ---
 def get_level_5_questions(num_questions=20):
     """Level 5: Phân số - rút gọn, cộng, trừ, nhân, chia"""
     questions = []
@@ -160,66 +200,57 @@ def get_level_5_questions(num_questions=20):
         type_q = random.choice(["rutgon", "cong", "tru", "nhan", "chia"])
 
         if type_q == "rutgon":
-            # Phân số cần rút gọn
-            d = random.randint(2, 10)
-            n = random.randint(2, 20) * d
-            question_text = f"Rút gọn phân số: {n}/{n + d * random.randint(1, 5)}"
-            correct_answer = f"{d}/{d + random.randint(1, 5)}"  # giả sử
-            # Tính thật
-            from math import gcd
-            num, den = n, n + d * random.randint(1, 5)
-            g = gcd(num, den)
-            correct_answer = f"{num//g}/{den//g}"
+            multiplier = random.randint(2, 10)
+            num = random.randint(2, 15) * multiplier
+            den = random.randint(2, 15) * multiplier
+            frac = Fraction(num, den)
+            question_text = f"Rút gọn phân số: {num}/{den}"
+            correct_str = f"{frac.numerator}/{frac.denominator}"
 
-        elif type_q in ["cong", "tru"]:
-            n1, d1 = random.randint(1, 10), random.randint(2, 10)
-            n2, d2 = random.randint(1, 10), random.randint(2, 10)
-            if type_q == "cong":
-                question_text = f"Tính: {n1}/{d1} + {n2}/{d2} = ?"
-                # Quy đồng mẫu
-                common = d1 * d2
-                num = n1 * d2 + n2 * d1
-            else:
-                question_text = f"Tính: {n1}/{d1} - {n2}/{d2} = ?"
-                common = d1 * d2
-                num = n1 * d2 - n2 * d1
-                if num < 0:
-                    num, n1, n2 = -num, n2, n1
-                    question_text = f"Tính: {n1}/{d1} - {n2}/{d2} = ?"
-            from math import gcd
-            g = gcd(num, common)
-            correct_answer = f"{num//g}/{common//g}" if g > 1 else f"{num}/{common}"
+        elif type_q == "cong":
+            f1 = Fraction(random.randint(1, 12), random.randint(2, 12))
+            f2 = Fraction(random.randint(1, 12), random.randint(2, 12))
+            result = f1 + f2
+            question_text = f"Tính: {f1.numerator}/{f1.denominator} + {f2.numerator}/{f2.denominator} = ?"
+            correct_str = f"{result.numerator}/{result.denominator}"
+
+        elif type_q == "tru":
+            f1 = Fraction(random.randint(3, 15), random.randint(2, 10))
+            f2 = Fraction(random.randint(1, 8), random.randint(2, 10))
+            if f1 < f2:
+                f1, f2 = f2, f1  # đảm bảo kết quả dương
+            result = f1 - f2
+            question_text = f"Tính: {f1.numerator}/{f1.denominator} - {f2.numerator}/{f2.denominator} = ?"
+            correct_str = f"{result.numerator}/{result.denominator}"
 
         elif type_q == "nhan":
-            n1, d1 = random.randint(1, 10), random.randint(2, 10)
-            n2, d2 = random.randint(1, 10), random.randint(2, 10)
-            question_text = f"Tính: {n1}/{d1} × {n2}/{d2} = ?"
-            from math import gcd
-            g1 = gcd(n1, d2)
-            g2 = gcd(n2, d1)
-            correct_answer = f"{(n1//g1)*(n2//g2)}/{(d1//g2)*(d2//g1)}"
+            f1 = Fraction(random.randint(1, 10), random.randint(2, 10))
+            f2 = Fraction(random.randint(1, 10), random.randint(2, 10))
+            result = f1 * f2
+            question_text = f"Tính: {f1.numerator}/{f1.denominator} × {f2.numerator}/{f2.denominator} = ?"
+            correct_str = f"{result.numerator}/{result.denominator}"
 
         else:  # chia
-            n1, d1 = random.randint(1, 10), random.randint(2, 10)
-            n2, d2 = random.randint(1, 10), random.randint(2, 10)
-            question_text = f"Tính: {n1}/{d1} : {n2}/{d2} = ?"
-            correct_answer = f"{n1*d2}/{d1*n2}"
-            from math import gcd
-            g = gcd(n1*d2, d1*n2)
-            correct_answer = f"{(n1*d2)//g}/{(d1*n2)//g}"
+            f1 = Fraction(random.randint(2, 12), random.randint(2, 8))
+            f2 = Fraction(random.randint(2, 10), random.randint(2, 10))
+            # Tránh chia cho 0 và kết quả quá phức tạp
+            result = f1 / f2
+            if result.denominator > 20:  # nếu mẫu quá lớn thì bỏ
+                result = Fraction(random.randint(1, 10), random.randint(2, 10))
+            question_text = f"Tính: {f1.numerator}/{f1.denominator} : {f2.numerator}/{f2.denominator} = ?"
+            correct_str = f"{result.numerator}/{result.denominator}"
 
-        # Vì đáp án là chuỗi phân số, ta sẽ chuyển thành số để tạo options
-        num_val = eval(correct_answer.replace("/", "*1.0/"))
-        options = _create_options(int(num_val * 10), min_val=1, max_val=200)
-        # Nhưng vẫn giữ đáp án dạng phân số đẹp
+        # Tạo đáp án sai dạng phân số (chuỗi)
+        options = _create_fraction_options(Fraction(correct_str))
+
         questions.append({
             "question": question_text,
             "options": options,
-            "answer": correct_answer,
-            "note": "Phân số (đáp án dạng chuỗi)"
+            "answer": correct_str,   # dạng "3/4"
+            "answer_index": options.index(correct_str)  # để kiểm tra sau
         })
-    return questions
 
+    return questions
 
 # --- Level 6: Tìm X nâng cao (phương trình, phân số, hỗn hợp) ---
 def get_level_6_questions(num_questions=20):
