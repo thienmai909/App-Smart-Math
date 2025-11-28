@@ -255,27 +255,34 @@ def get_level_6_questions(num_questions=20):
             # Dạng: ax + b = c
             a = random.randint(2, 8)
             b = random.randint(1, 15)
-            x = random.randint(3, 20)
+            x = random.randint(3, 18)
             c = a * x + b
             question_text = f"Giải phương trình: {a}x + {b} = {c}"
             answer = x
 
         elif pattern == 2:
             # Dạng: a(x + b) = c
-            a = random.randint(2, 6)
-            b = random.randint(2, 10)
-            x = random.randint(5, 18)
+            a = random.randint(2,8)
+            b = random.randint(2, 20)
+            x = random.randint(5, 22)
             c = a * (x + b)
             question_text = f"Giải phương trình: {a}(x + {b}) = {c}"
             answer = x
 
         elif pattern == 3:
-            # Dạng: ax - b = c
-            a = random.randint(2, 7)
-            b = random.randint(5, 20)
-            x = random.randint(6, 20)
-            c = a * x - b
-            question_text = f"Giải phương trình: {a}x − {b} = {c}"
+            rnd = random.randint(1, 2)
+            if rnd == 1: # ax - b = c
+                a = random.randint(2, 9)
+                b = random.randint(10, 35)
+                x = random.randint(7, 18)
+                c = a * x - b
+                question_text = f"Giải phương trình: {a}x − {b} = {c}"
+            else: #b - ax = c
+                a = random.randint(2, 8)
+                b = random.randint(20, 50)
+                x = random.randint(5, 15)
+                c = b - a * x
+                question_text = f"Giải phương trình: {b} − {a}x = {c}"
             answer = x
 
         elif pattern == 4:
@@ -289,11 +296,12 @@ def get_level_6_questions(num_questions=20):
             question_text = f"Tìm x (số nguyên): x : {a} + {b} = {c}"
             answer = x
 
-        else:  # pattern == 5: hỗn hợp 2 vế
-            x = random.randint(8, 25)
-            left_add = random.randint(3, 12)
-            right_add = random.randint(5, 15)
-            question_text = f"Tìm x: 2x + {left_add} = {2*x + left_add + right_add} và x − 5 = {x - 5}"
+        else:  # pattern == 5: a(x + b) = x + c
+            x = random.randint(12, 38)
+            a = random.randint(2, 6)
+            b = random.randint(3, 12)            
+            c = a * (x + b) - x
+            question_text = f"Giải phương trình: {a}(x + {b}) = x + {c}"
             answer = x
 
         options = _create_options(answer, min_val=1, max_val=80)
