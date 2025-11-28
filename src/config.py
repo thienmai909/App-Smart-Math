@@ -7,7 +7,6 @@ SCREEN_HEIGHT = 720
 FPS = 120
 TITLE = "Smart Math"
 
-
 # Màu sắc
 COLOR_BG = (0, 0, 0)
 COLOR_TEXT = (255, 255, 255)
