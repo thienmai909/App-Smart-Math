@@ -1,11 +1,7 @@
 
 import pygame
 from src.screens.base_screen import BaseScreen
-# Sửa lại cách import nếu bạn chạy từ thư mục gốc
-# Giả sử config đã được tạo
-from src.config import * # ------------------------------------------------
-# DỮ LIỆU GIẢ LẬP (MOCK DATA)
-# ------------------------------------------------
+from src.config import *  
 MOCK_QUESTION = {
     "question_text": "Cơ quan nào sau đây không thuộc hệ tiêu hóa?",
     "answers": [
@@ -22,11 +18,8 @@ class GameplayScreen(BaseScreen):
     """Màn hình chính nơi người chơi trả lời câu hỏi."""
 
     def __init__(self, game_manager):
-        # Kế thừa khởi tạo từ BaseScreen (sẽ gọi ABC.__init__)
         super().__init__(game_manager)
 
-        # Khởi tạo Font và Load nội dung
-        # Khởi tạo font (đảm bảo font có sẵn, ví dụ: Arial)
         self.font_large = pygame.font.SysFont('Arial', 30)
         self.font_medium = pygame.font.SysFont('Arial', 24)
 
@@ -35,7 +28,6 @@ class GameplayScreen(BaseScreen):
         self.question_text = self.question_data["question_text"]
         self.answers = self.question_data["answers"]
 
-        # Khởi tạo các Rect (hình chữ nhật) cho các nút/đáp án
         self._setup_layout()
 
     def _setup_layout(self):
