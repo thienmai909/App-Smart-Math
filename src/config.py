@@ -1,10 +1,12 @@
 import pygame
 
+
 # Màn hình
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 720
 FPS = 120
 TITLE = "Smart Math"
+
 
 # Màu sắc
 COLOR_BG = (0, 0, 0)
