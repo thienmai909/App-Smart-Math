@@ -1,4 +1,16 @@
+# src/config.py
 import pygame
+import os
+import sys
+
+# Lấy đường dẫn thư mục hiện tại của file config.py (src/)
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Đi ngược 1 cấp để về thư mục gốc của dự án
+BASE_DIR = os.path.dirname(CURRENT_DIR)
+
+# Định nghĩa thư mục assets (assets nằm cùng cấp với src/)
+ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 
 # Màn hình
 SCREEN_WIDTH = 1200
@@ -14,6 +26,11 @@ COLOR_CORRECT = (50, 200, 50)
 GREEN = COLOR_CORRECT
 COLOR_WRONG = (200, 50, 50)
 COLOR_WHITE = (255, 255, 255)
+
+# Định nghĩa YELLOW và BLUE để LevelSelectScreen có thể import
+YELLOW = (255, 255, 0)     
+BLUE = (30, 144, 255)      
+
 # Cài đặt
 POINTS_CORRECT = 5
 POINTS_WRONG = -2
