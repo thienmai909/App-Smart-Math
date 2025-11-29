@@ -1,31 +1,38 @@
-# src/core/game_manager.py
+import pygame
+from src.screens.menu_screen import MenuScreen
+from src.screens.level_select_screen import LevelSelectScreen
 from src.screens.gameplay_screen import GameplayScreen
-from src.screens.menu_screen import MenuScreen 
 
 class GameManager:
     def __init__(self):
-        # Khởi tạo tất cả các màn hình
+        # Dữ liệu cho phiên chơi
+        self.current_level = 1
+        self.total_score = 0
+
+        # Quản lý màn hình
+        # Khởi tạo các screen, truyền 'self' vào để chúng có thể gọi ngược lại
         self.screens = {
             "MENU": MenuScreen(self),
+            "LEVEL": LevelSelectScreen(self),
             "GAMEPLAY": GameplayScreen(self)
-        } 
-        # Bắt đầu bằng màn hình MENU
-        self.current_screen = self.screens["MENU"] 
-        print(f"GameManager khởi tạo. Màn hình hiện tại: {self.current_screen.__class__.__name__}")
+        }
 
-    def switch_screen(self, screen_name):
-        """Chuyển đổi màn hình hiện tại"""
-        if screen_name in self.screens:
-            print(f"Chuyển màn hình từ {self.current_screen.__class__.__name__} sang {screen_name}")
-            self.current_screen = self.screens[screen_name]
+        self.active_screen_key = "MENU"
+        self.active_screen = self.screens["MENU"] # | = self.screens[self.active_screen_key]
+    
+    def switch_screen(self, screen_key):
+        """Hàm để các màn hình con gọi khi muốn chuyển cảnh"""
+        if screen_key in self.screens:
+            self.active_screen_key = screen_key
+            self.active_screen = self.screens[screen_key]
         else:
-            print(f"Lỗi: Không tìm thấy màn hình '{screen_name}'")
+            print(f"Error: Screen {screen_key} not found!")
 
     def handle_input(self, event):
-        self.current_screen.handle_input(event)
-
+        self.active_screen.handle_input(event)
+    
     def update(self):
-        self.current_screen.update()
+        self.active_screen.update()
 
     def draw(self, surface):
-        self.current_screen.draw(surface)
+        self.active_screen.draw(surface)
