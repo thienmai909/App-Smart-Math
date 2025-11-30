@@ -5,6 +5,7 @@ import sys
 from src.screens.menu_screen import MenuScreen
 from src.screens.level_select_screen import LevelSelectScreen
 from src.screens.gameplay_screen import GameplayScreen
+# from src.screens.settings_screen import SettingsScreen <--- ĐÃ LOẠI BỎ
 from data.questions import get_level_1_questions, get_level_2_questions, get_level_3_questions, get_level_4_questions, get_level_5_questions, get_level_6_questions
 from data.save_manager import load_game_data, save_game_data 
 from src.screens.level_select_screen import LEVELS 
@@ -27,10 +28,12 @@ class GameManager:
         self._current_surface = None 
         self.sound_assets = self._load_sound_assets()
         
+        # Khởi tạo tất cả các màn hình
         self.screens = {
             "MENU": MenuScreen(self),
             "LEVEL": LevelSelectScreen(self),
-            "GAMEPLAY": GameplayScreen(self)
+            "GAMEPLAY": GameplayScreen(self),
+            # "SETTINGS": SettingsScreen(self), <--- ĐÃ LOẠI BỎ
         }
         self.current_screen_name = "MENU" 
         self.current_level_key = None 
@@ -39,7 +42,6 @@ class GameManager:
         
         self.game_data = load_game_data()
         
-        # Củng cố: Đảm bảo game_data có khóa 'stars' và 'highscores'
         if 'stars' not in self.game_data:
             self.game_data['stars'] = [0] * len(LEVELS)
         if 'highscores' not in self.game_data:
@@ -62,7 +64,6 @@ class GameManager:
         return assets
     
     def calculate_stars(self, final_score):
-        """Tính số sao dựa trên điểm số (0, 1, 2, hoặc 3)."""
         try:
             max_score = 20 * POINTS_CORRECT
         except NameError:
@@ -101,29 +102,22 @@ class GameManager:
         self.screens[self.current_screen_name].draw()
 
     def save_score(self, score):
-        """Lưu điểm cao mới và số sao mới cho level hiện tại."""
         if self.current_level_key:
             try:
-                # 1. Tính index
                 level_index = int(self.current_level_key.split('_')[1]) - 1
                 num_stars = self.calculate_stars(score)
                 
                 if level_index < len(self.game_data['highscores']):
                     data_changed = False
                     
-                    # 2. Cập nhật Điểm cao nhất
                     if score > self.game_data['highscores'][level_index]:
                         self.game_data['highscores'][level_index] = score
                         data_changed = True
-                        print(f"LƯU ĐIỂM CAO MỚI: Level {level_index+1}: {score}")
                         
-                    # 3. Cập nhật Sao (Chỉ cập nhật nếu số sao mới cao hơn)
                     if num_stars > self.game_data['stars'][level_index]:
                         self.game_data['stars'][level_index] = num_stars
                         data_changed = True
-                        print(f"LƯU SAO MỚI: Level {level_index+1}: {num_stars} sao")
                         
-                    # 4. Lưu dữ liệu nếu có thay đổi
                     if data_changed:
                         save_game_data(self.game_data)
                     
