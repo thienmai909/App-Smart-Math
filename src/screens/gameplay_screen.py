@@ -7,7 +7,8 @@ from src.config import *
 
 class GameplayScreen(BaseScreen):
     def __init__(self, game_manager):
-        super().__init>(game_manager)
+        # KHẮC PHỤC LỖI Attribute Error: Thêm dấu () vào super().__init__
+        super().__init__(game_manager)
         
         try:
             self.font_large = pygame.font.Font(None, FONT_SIZE_LARGE) 
