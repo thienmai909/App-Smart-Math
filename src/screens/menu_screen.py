@@ -1,4 +1,3 @@
-# src/screens/menu_screen.py
 import pygame
 import os
 from src.screens.base_screen import BaseScreen
@@ -26,16 +25,12 @@ class MenuScreen(BaseScreen):
             self.font_title = pygame.font.SysFont("Arial", FONT_SIZE_TITLE)
             self.font_small = pygame.font.SysFont("Arial", FONT_SIZE_SMALL)
         
-        # KHAI BÁO CÁC RECT TẠM THỜI (chỉ cần start_button)
+        # KHAI BÁO CÁC RECT TẠM THỜI 
         self.start_button_rect = pygame.Rect(0, 0, 1, 1) 
-        # self.setting_button_rect đã bị loại bỏ
-        
+        # self.setting_button_rect đã bị loại bỏ 
         self.assets = self._load_assets()
-
         # CĂN CHỈNH VỊ TRÍ NÚT PLAY CUỐI CÙNG
-        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 185) 
-        
-        # TRẠNG THÁI CÀI ĐẶT (KHÔNG CẦN NỮA, NHƯNG GIỮ LẠI ĐỂ KHỎI THAY ĐỔI DÀI DÒNG)
+        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 185)   
         # TÍCH HỢP TƯƠNG TÁC SETTINGS TRỰC TIẾP TẠI LEVEL SCREEN
         self.show_settings = False
         self.settings_rect = self.assets['nen_caidat'].get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
@@ -51,12 +46,10 @@ class MenuScreen(BaseScreen):
         assets = {}
         try:
             assets['nen_menu'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'giaodiendautien.png')).convert_alpha()
-            assets['nen_menu'] = pygame.transform.scale(assets['nen_menu'], (SCREEN_WIDTH, SCREEN_HEIGHT))
-            
+            assets['nen_menu'] = pygame.transform.scale(assets['nen_menu'], (SCREEN_WIDTH, SCREEN_HEIGHT))     
             assets['nutbatdau'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nutbatdau.png')).convert_alpha()
             assets['nutbatdau'] = pygame.transform.scale(assets['nutbatdau'], (250, 60)) 
             self.start_button_rect.size = assets['nutbatdau'].get_size() 
-
             # TẢI HÌNH ẢNH SETTINGS ĐỂ TRÁNH LỖI KHI TRUY CẬP TRONG __init__
             assets['nut_caidat'] = pygame.Surface((50, 50), pygame.SRCALPHA) # Chỉ cần dummy surface
             assets['nen_caidat'] = pygame.Surface((400, 450)); assets['nen_caidat'].fill((200, 150, 150))
@@ -77,29 +70,20 @@ class MenuScreen(BaseScreen):
     def handle_input(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
-            
-            # Nếu pop-up settings không được sử dụng ở đây, bỏ qua logic này
-            # Chúng ta chỉ giữ lại logic cho nút PLAY
+
             if self.start_button_rect.collidepoint(mouse_pos):
                 self.game_manager.switch_screen("LEVEL") 
 
     def update(self):
-        # Không cần logic update settings ở đây nữa
         pass
 
     def _draw_settings_popup(self, surface):
-        # Không cần vẽ pop-up settings ở đây nữa
         pass
 
     def draw(self):
         surface = self.game_manager._current_surface
         if surface is None:
             return
-        
-        # 1. VẼ HÌNH ẢNH NỀN MENU
         surface.blit(self.assets['nen_menu'], (0, 0))
-        
-        # 2. VẼ NÚT PLAY (BẮT ĐẦU)
         surface.blit(self.assets['nutbatdau'], self.start_button_rect.topleft)
         
-        # 3. Nút Cài đặt KHÔNG ĐƯỢC VẼ ở đây
