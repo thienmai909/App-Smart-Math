@@ -30,7 +30,7 @@ class MenuScreen(BaseScreen):
     def draw(self, surface):
         surface.fill(COLOR_BG)
         
-        title_text = self.font_title.render(TITLE, True, COLOR_TEXT)
+        title_text = self.font_title.render(TITLE, True, COLOR_TITLE)
         title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
         surface.blit(title_text, title_rect)
         

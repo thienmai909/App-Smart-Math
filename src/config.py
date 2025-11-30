@@ -1,43 +1,43 @@
 # src/config.py
-import pygame
 import os
-import sys
 
-# Lấy đường dẫn thư mục hiện tại của file config.py (src/)
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+# --- THÔNG SỐ MÀN HÌNH ---
+TITLE = "QUIZ GAME MASTER"
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+FPS = 60
 
-# Đi ngược 1 cấp để về thư mục gốc của dự án
-BASE_DIR = os.path.dirname(CURRENT_DIR)
+# --- ĐƯỜNG DẪN TÀI NGUYÊN (SỬA LỖI NAMEERROR) ---
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ASSETS_IMG_DIR = os.path.join(BASE_DIR, 'assets', 'images') # Biến sử dụng cho ảnh
+ASSETS_SND_DIR = os.path.join(BASE_DIR, 'assets', 'sounds') # Biến sử dụng cho âm thanh
 
-# Định nghĩa thư mục assets (assets nằm cùng cấp với src/)
-ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+# --- THÔNG SỐ GAMEPLAY & SAO ---
+TIME_LIMIT = 30 
+POINTS_CORRECT = 100
+POINTS_WRONG = -50 
 
-# Màn hình
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 720
-FPS = 120
-TITLE = "Smart Math"
+MAX_SCORE_PER_LEVEL = 2000 
+STAR_THRESHOLDS = {
+    3: 0.90,
+    2: 0.70,
+    1: 0.50,
+    0: 0.00
+}
 
-# Màu sắc
-COLOR_BG = (0, 0, 0)
-COLOR_TEXT = (255, 255, 255)
-COLOR_ACCENT = (255, 200, 0)
-COLOR_CORRECT = (50, 200, 50)
-GREEN = COLOR_CORRECT
-COLOR_WRONG = (200, 50, 50)
+# --- MÀU SẮC ---
 COLOR_WHITE = (255, 255, 255)
+COLOR_BLACK = (0, 0, 0)
+COLOR_BG = (28, 28, 28) 
+COLOR_TEXT = (255, 240, 200) 
+COLOR_TITLE = (255, 180, 0) 
+COLOR_ACCENT = (0, 150, 255) 
+COLOR_CORRECT = (0, 200, 0) 
+COLOR_WRONG = (255, 50, 50) 
+COLOR_INFO = (255, 120, 0) 
 
-# Định nghĩa YELLOW và BLUE để LevelSelectScreen có thể import
-YELLOW = (255, 255, 0)     
-BLUE = (30, 144, 255)      
-
-# Cài đặt
-POINTS_CORRECT = 5
-POINTS_WRONG = -2
-TIME_LIMIT = 30
-
-# Font size
-FONT_SIZE_TITLE = 72
+# --- FONT SIZE ---
+FONT_SIZE_TITLE = 80
 FONT_SIZE_LARGE = 48
 FONT_SIZE_SMALL = 30
-FONT_SIZE_MEDIUM = 40
+FONT_SIZE_MEDIUM = 36
