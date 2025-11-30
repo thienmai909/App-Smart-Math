@@ -1,14 +1,18 @@
 # src/core/game_manager.py
 import pygame
+import os
+import sys 
 from src.screens.menu_screen import MenuScreen
 from src.screens.level_select_screen import LevelSelectScreen
 from src.screens.gameplay_screen import GameplayScreen
 from data.questions import get_level_1_questions, get_level_2_questions, get_level_3_questions, get_level_4_questions, get_level_5_questions, get_level_6_questions
 from data.save_manager import load_game_data, save_game_data 
-# Import LEVELS từ level_select_screen để ánh xạ
 from src.screens.level_select_screen import LEVELS 
 
-# Ánh xạ LEVEL KEY với hàm tạo câu hỏi tương ứng
+# GIẢ ĐỊNH CÁC HẰNG SỐ NÀY TỪ config.py
+POINTS_CORRECT = 10 
+POINTS_WRONG = -5
+
 QUESTION_FUNCTIONS = {
     "LEVEL_1": get_level_1_questions,
     "LEVEL_2": get_level_2_questions,
@@ -20,7 +24,9 @@ QUESTION_FUNCTIONS = {
 
 class GameManager:
     def __init__(self):
-        # Khởi tạo tất cả các màn hình
+        self._current_surface = None 
+        self.sound_assets = self._load_sound_assets()
+        
         self.screens = {
             "MENU": MenuScreen(self),
             "LEVEL": LevelSelectScreen(self),
@@ -31,18 +37,53 @@ class GameManager:
         self.questions_pool = [] 
         self.question_index = 0 
         
-        # Tải dữ liệu Game (Highscore)
         self.game_data = load_game_data()
+        
+        # Củng cố: Đảm bảo game_data có khóa 'stars' và 'highscores'
+        if 'stars' not in self.game_data:
+            self.game_data['stars'] = [0] * len(LEVELS)
+        if 'highscores' not in self.game_data:
+            self.game_data['highscores'] = [0] * len(LEVELS)
+
+
+    def _load_sound_assets(self):
+        assets = {}
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        sound_dir = os.path.join(project_root, 'assets', 'sounds')
+        
+        try:
+            pygame.mixer.init()
+            assets['click_dapan'] = pygame.mixer.Sound(os.path.join(sound_dir, 'click_dapan.wav'))
+            assets['correct'] = pygame.mixer.Sound(os.path.join(sound_dir, 'correct.mp3'))
+            assets['wrong'] = pygame.mixer.Sound(os.path.join(sound_dir, 'no.mp3'))
+        except Exception as e:
+            print(f"Cảnh báo: Lỗi tải âm thanh: No such file or directory: {e}")
+            assets = {}
+        return assets
+    
+    def calculate_stars(self, final_score):
+        """Tính số sao dựa trên điểm số (0, 1, 2, hoặc 3)."""
+        try:
+            max_score = 20 * POINTS_CORRECT
+        except NameError:
+            max_score = 20 * 10
+            
+        if final_score >= max_score * 0.9: 
+            return 3
+        elif final_score >= max_score * 0.7: 
+            return 2
+        elif final_score >= max_score * 0.5: 
+            return 1
+        else:
+            return 0
 
     def switch_screen(self, new_screen_name):
         self.current_screen_name = new_screen_name
         
         if new_screen_name == "GAMEPLAY":
             if self.current_level_key and self.current_level_key in QUESTION_FUNCTIONS:
-                # 1. Tải câu hỏi (20 câu/level)
                 self.questions_pool = QUESTION_FUNCTIONS[self.current_level_key](num_questions=20)
                 self.question_index = 0
-                # 2. Reset và tải câu hỏi đầu tiên trên màn hình Gameplay
                 self.screens["GAMEPLAY"].reset_game()
                 self.screens["GAMEPLAY"].load_next_question() 
             else:
@@ -56,20 +97,35 @@ class GameManager:
         self.screens[self.current_screen_name].update()
 
     def draw(self, surface):
-        self.screens[self.current_screen_name].draw(surface)
+        self._current_surface = surface 
+        self.screens[self.current_screen_name].draw()
 
     def save_score(self, score):
-        """Lưu điểm cao mới cho level hiện tại"""
+        """Lưu điểm cao mới và số sao mới cho level hiện tại."""
         if self.current_level_key:
             try:
-                # Tìm index của level (LEVEL_1 -> 0, LEVEL_6 -> 5)
+                # 1. Tính index
                 level_index = int(self.current_level_key.split('_')[1]) - 1
+                num_stars = self.calculate_stars(score)
                 
                 if level_index < len(self.game_data['highscores']):
-                    # Cập nhật điểm cao
+                    data_changed = False
+                    
+                    # 2. Cập nhật Điểm cao nhất
                     if score > self.game_data['highscores'][level_index]:
                         self.game_data['highscores'][level_index] = score
-                        save_game_data(self.game_data)
+                        data_changed = True
                         print(f"LƯU ĐIỂM CAO MỚI: Level {level_index+1}: {score}")
+                        
+                    # 3. Cập nhật Sao (Chỉ cập nhật nếu số sao mới cao hơn)
+                    if num_stars > self.game_data['stars'][level_index]:
+                        self.game_data['stars'][level_index] = num_stars
+                        data_changed = True
+                        print(f"LƯU SAO MỚI: Level {level_index+1}: {num_stars} sao")
+                        
+                    # 4. Lưu dữ liệu nếu có thay đổi
+                    if data_changed:
+                        save_game_data(self.game_data)
+                    
             except Exception as e:
                 print(f"Lỗi khi lưu điểm: {e}")

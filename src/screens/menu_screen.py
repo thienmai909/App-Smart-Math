@@ -1,14 +1,31 @@
 # src/screens/menu_screen.py
 import pygame
+import os
 from src.screens.base_screen import BaseScreen
 from src.config import *
+
+# ĐƯỜNG DẪN MẪU ĐẾN FONT HỖ TRỢ TIẾNG VIỆT
+try:
+    VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'UTM-Avo.ttf')
+except NameError:
+    VIETNAMESE_FONT_PATH = None
 
 class MenuScreen(BaseScreen):
     def __init__(self, game_manager):
         super().__init__(game_manager)
-        self.font_title = pygame.font.Font(None, FONT_SIZE_TITLE)
-        self.font_small = pygame.font.Font(None, FONT_SIZE_SMALL)
         
+        # SỬA LỖI FONT
+        try:
+            if VIETNAMESE_FONT_PATH and os.path.exists(VIETNAMESE_FONT_PATH):
+                self.font_title = pygame.font.Font(VIETNAMESE_FONT_PATH, FONT_SIZE_TITLE)
+                self.font_small = pygame.font.Font(VIETNAMESE_FONT_PATH, FONT_SIZE_SMALL)
+            else:
+                self.font_title = pygame.font.SysFont("Arial", FONT_SIZE_TITLE)
+                self.font_small = pygame.font.SysFont("Arial", FONT_SIZE_SMALL)
+        except pygame.error:
+            self.font_title = pygame.font.SysFont("Arial", FONT_SIZE_TITLE)
+            self.font_small = pygame.font.SysFont("Arial", FONT_SIZE_SMALL)
+            
         self.start_button_rect = pygame.Rect(0, 0, 250, 60)
         self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
         
@@ -27,7 +44,11 @@ class MenuScreen(BaseScreen):
     def update(self):
         pass
 
-    def draw(self, surface):
+    def draw(self): # CHỮ KÝ HÀM ĐÚNG: KHÔNG CÓ THAM SỐ
+        surface = self.game_manager._current_surface
+        if surface is None:
+            return
+
         surface.fill(COLOR_BG)
         
         title_text = self.font_title.render(TITLE, True, COLOR_TITLE)

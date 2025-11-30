@@ -5,33 +5,48 @@ import time
 from src.screens.base_screen import BaseScreen
 from src.config import *
 
+# ĐƯỜNG DẪN MẪU ĐẾN FONT HỖ TRỢ TIẾNG VIỆT
+try:
+    VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'UTM-Avo.ttf')
+except NameError:
+    VIETNAMESE_FONT_PATH = None
+
 class GameplayScreen(BaseScreen):
     def __init__(self, game_manager):
-        # KHẮC PHỤC LỖI Attribute Error: Thêm dấu () vào super().__init__
         super().__init__(game_manager)
         
+        # SỬA LỖI FONT
         try:
-            self.font_large = pygame.font.Font(None, FONT_SIZE_LARGE) 
-            self.font_small = pygame.font.Font(None, FONT_SIZE_SMALL) 
-            self.font_title = pygame.font.Font(None, FONT_SIZE_TITLE) 
-            self.font_medium = pygame.font.Font(None, FONT_SIZE_MEDIUM) # Thêm font medium
+            if VIETNAMESE_FONT_PATH and os.path.exists(VIETNAMESE_FONT_PATH):
+                self.font_title = pygame.font.Font(VIETNAMESE_FONT_PATH, FONT_SIZE_TITLE) 
+                self.font_large = pygame.font.Font(VIETNAMESE_FONT_PATH, FONT_SIZE_LARGE)
+                self.font_small = pygame.font.Font(VIETNAMESE_FONT_PATH, FONT_SIZE_SMALL) 
+                self.font_medium = pygame.font.Font(VIETNAMESE_FONT_PATH, FONT_SIZE_MEDIUM)
+            else:
+                self.font_title = pygame.font.SysFont("Arial", FONT_SIZE_TITLE)
+                self.font_large = pygame.font.SysFont("Arial", FONT_SIZE_LARGE)
+                self.font_small = pygame.font.SysFont("Arial", FONT_SIZE_SMALL)
+                self.font_medium = pygame.font.SysFont("Arial", FONT_SIZE_MEDIUM)
         except pygame.error:
+            self.font_title = pygame.font.SysFont("Arial", FONT_SIZE_TITLE)
             self.font_large = pygame.font.SysFont("Arial", FONT_SIZE_LARGE)
             self.font_small = pygame.font.SysFont("Arial", FONT_SIZE_SMALL)
-            self.font_title = pygame.font.SysFont("Arial", FONT_SIZE_TITLE)
             self.font_medium = pygame.font.SysFont("Arial", FONT_SIZE_MEDIUM)
         
-        # --- KHẮC PHỤC LỖI ATTRIBUTEERROR: KHAI BÁO CÁC RECT TRƯỚC KHI TẢI ASSETS ---
-        self.back_button_rect = pygame.Rect(10, 10, 100, 40) # Khai báo trước
-        self.game_over_button_rect = pygame.Rect(0, 0, 200, 50) # Khai báo trước
-        # -----------------------------------------------------------------------------
+        self.back_button_rect = pygame.Rect(20, 20, 100, 40) 
+        self.game_over_button_rect = pygame.Rect(0, 0, 250, 60)
         
         self.score = 0
         self.current_question = None 
         self.button_rects = [] 
         
+        try:
+            self.time_limit = TIME_LIMIT
+        except NameError:
+            self.time_limit = 30
+        
         self.start_time = time.time()
-        self.time_left = TIME_LIMIT
+        self.time_left = self.time_limit
         self.game_over = False
         self.final_stars = 0 
 
@@ -39,14 +54,13 @@ class GameplayScreen(BaseScreen):
         self.show_feedback_until = 0 
         self.answer_is_correct = False 
 
-        self.question_pos = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4)
-        self.answer_start_y = SCREEN_HEIGHT // 2 - 50
-        self.answer_spacing = 70
+        self.question_pos = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4 - 20)
+        self.answer_start_y = SCREEN_HEIGHT // 2 + 50
+        self.answer_spacing = 80 
         self.answer_x = SCREEN_WIDTH // 2
         
-        self.assets = self._load_assets() # Gọi hàm tải assets (Bây giờ đã an toàn)
+        self.assets = self._load_assets() 
         
-        # Gán center cho nút game over sau khi đã gọi load assets
         self.game_over_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200)
 
     def _load_assets(self):
@@ -55,20 +69,25 @@ class GameplayScreen(BaseScreen):
             assets['nen_lv'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nen_lv.png')).convert()
             assets['nen_cauhoi'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nen_cauhoi.png')).convert_alpha()
             assets['game_over'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'game_over.png')).convert_alpha()
+            
             assets['nut_back'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nut_back.png')).convert_alpha()
-            # Dòng lỗi cũ đã được chuyển lên trên. Giờ chỉ cần gán size:
+            assets['nut_back'] = pygame.transform.scale(assets['nut_back'], (150, 60))
             self.back_button_rect.size = assets['nut_back'].get_size() 
+            self.back_button_rect.topleft = (20, 20)
+
             assets['molv1'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'molv1.png')).convert_alpha()
+            assets['molv1'] = pygame.transform.scale(assets['molv1'], (400, 60))
+            
             assets['thanh_tiendo'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'thanh_tiendo.png')).convert_alpha()
             
             assets['sao_large'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'sao.png')).convert_alpha()
             assets['sao_large'] = pygame.transform.scale(assets['sao_large'], (50, 50))
             
         except pygame.error as e:
-            print(f"Lỗi tải hình ảnh Gameplay: {e}. Vui lòng kiểm tra thư mục {ASSETS_IMG_DIR}.")
+            print(f"Lỗi tải hình ảnh Gameplay: {e}. Vui lòng kiểm tra thư mục {ASSETS_IMG_DIR} và file ảnh.")
             assets['nen_lv'] = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT)); assets['nen_lv'].fill(COLOR_BG)
-            assets['nut_back'] = pygame.Surface((100, 40)); assets['nut_back'].fill(COLOR_WRONG)
-            assets['molv1'] = pygame.Surface((400, 70)); assets['molv1'].fill(COLOR_ACCENT)
+            assets['nut_back'] = pygame.Surface((150, 60)); assets['nut_back'].fill(COLOR_WRONG)
+            assets['molv1'] = pygame.Surface((400, 60)); assets['molv1'].fill(COLOR_ACCENT)
             assets['sao_large'] = None
             
         assets['nen_lv'] = pygame.transform.scale(assets['nen_lv'], (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -78,7 +97,7 @@ class GameplayScreen(BaseScreen):
         self.score = 0
         self.current_question = None
         self.game_over = False
-        self.time_left = TIME_LIMIT
+        self.time_left = self.time_limit
         self.selected_answer_index = None
         self.final_stars = 0
 
@@ -103,7 +122,7 @@ class GameplayScreen(BaseScreen):
             self.show_feedback_until = 0
             self.answer_is_correct = False
             self.start_time = time.time()
-            self.time_left = TIME_LIMIT
+            self.time_left = self.time_limit
         
         else:
             self.game_over = True
@@ -128,7 +147,7 @@ class GameplayScreen(BaseScreen):
             if self.selected_answer_index is None:
                 for i, rect in enumerate(self.button_rects):
                     if rect.collidepoint(mouse_pos):
-                        if 'click_dapan' in self.game_manager.sound_assets:
+                        if self.game_manager.sound_assets.get('click_dapan'):
                              self.game_manager.sound_assets['click_dapan'].play()
                         self.process_answer(i)
                         return
@@ -139,15 +158,20 @@ class GameplayScreen(BaseScreen):
         is_correct = (selected_index == self.current_question["correct_index"])
         self.answer_is_correct = is_correct
         
-        if 'correct' in self.game_manager.sound_assets and is_correct:
-            self.game_manager.sound_assets['correct'].play()
-        elif 'wrong' in self.game_manager.sound_assets and not is_correct:
-            self.game_manager.sound_assets['wrong'].play()
-        
         if is_correct:
-            self.score += POINTS_CORRECT 
+            if self.game_manager.sound_assets.get('correct'):
+                self.game_manager.sound_assets['correct'].play()
+            try:
+                self.score += POINTS_CORRECT 
+            except NameError:
+                self.score += 10 
         else:
-            self.score += POINTS_WRONG 
+            if self.game_manager.sound_assets.get('wrong'):
+                self.game_manager.sound_assets['wrong'].play()
+            try:
+                self.score += POINTS_WRONG 
+            except NameError:
+                self.score += -5 
 
         self.show_feedback_until = time.time() + 1.5
 
@@ -158,17 +182,24 @@ class GameplayScreen(BaseScreen):
         current_time = time.time()
         
         if self.selected_answer_index is None:
-            self.time_left = TIME_LIMIT - int(current_time - self.start_time)
+            self.time_left = self.time_limit - int(current_time - self.start_time)
             if self.time_left <= 0:
                 self.time_left = 0
                 self.game_over = True 
-                self.final_stars = self.game_manager.calculate_stars(self.score + POINTS_WRONG)
-                self.game_manager.save_score(self.score + POINTS_WRONG) 
+                try:
+                    self.final_stars = self.game_manager.calculate_stars(self.score + POINTS_WRONG)
+                except NameError:
+                    self.final_stars = self.game_manager.calculate_stars(self.score - 5)
+                self.game_manager.save_score(self.score) 
         
         if self.selected_answer_index is not None and current_time >= self.show_feedback_until:
             self.load_next_question()
             
-    def draw(self, surface):
+    def draw(self): # CHỮ KÝ HÀM ĐÚNG: KHÔNG CÓ THAM SỐ
+        surface = self.game_manager._current_surface
+        if surface is None:
+            return
+            
         self.button_rects = []
         
         surface.blit(self.assets['nen_lv'], (0, 0))
@@ -184,7 +215,7 @@ class GameplayScreen(BaseScreen):
             surface.blit(timer_text, timer_text_rect)
 
         score_text = self.font_small.render(f"Điểm: {self.score}", True, COLOR_TEXT)
-        surface.blit(score_text, (SCREEN_WIDTH - 10 - score_text.get_width(), 10))
+        surface.blit(score_text, (SCREEN_WIDTH - 20 - score_text.get_width(), 20))
         
         # 2. VẼ NÚT BACK/MENU
         surface.blit(self.assets['nut_back'], self.back_button_rect.topleft)
@@ -202,7 +233,7 @@ class GameplayScreen(BaseScreen):
             question_rect = question_text.get_rect(center=question_rect_center)
             surface.blit(question_text, question_rect)
 
-            # 4. VẼ 4 ĐÁP ÁN
+            # 4. VẼ 4 ĐÁP ÁN (Hình ảnh molv1)
             button_image = self.assets.get('molv1', None)
             
             for i, answer in enumerate(self.current_question["answers"]):
@@ -211,10 +242,10 @@ class GameplayScreen(BaseScreen):
                 if button_image:
                     button_width, button_height = button_image.get_size()
                 else:
-                    button_width, button_height = 400, 50
+                    button_width, button_height = 400, 60
 
                 button_rect = pygame.Rect(0, 0, button_width, button_height)
-                button_rect.center = (self.answer_x, y_pos)
+                button_rect.center = (self.answer_x, y_pos) 
                 self.button_rects.append(button_rect) 
                 
                 button_color = COLOR_ACCENT 
@@ -237,8 +268,8 @@ class GameplayScreen(BaseScreen):
                     pygame.draw.rect(surface, button_color, button_rect, border_radius=10)
                 
                 answer_display = f"{chr(65 + i)}. {answer}"
-                answer_text = self.font_small.render(answer_display, True, COLOR_WHITE)
-                answer_text_rect = answer_text.get_rect(midleft=(button_rect.x + 40, y_pos)) # Căn lề trái
+                answer_text = self.font_medium.render(answer_display, True, COLOR_WHITE) 
+                answer_text_rect = answer_text.get_rect(midleft=(button_rect.x + 40, y_pos)) 
                 surface.blit(answer_text, answer_text_rect)
             
         # 5. VẼ THÔNG BÁO GAME OVER
