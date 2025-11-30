@@ -6,11 +6,11 @@ from src.config import *
 # Cấu trúc LEVELS mới với image_key
 LEVELS = [
     {"name": "LEVEL 1", "key": "LEVEL_1", "image_key": "molv1"},
-    {"name": "LEVEL 2", "key": "LEVEL_2", "image_key": "molv2"},
-    {"name": "LEVEL 3", "key": "LEVEL_3", "image_key": "molv3"},
-    {"name": "LEVEL 4", "key": "LEVEL_4", "image_key": "molv4"},
-    {"name": "LEVEL 5", "key": "LEVEL_5", "image_key": "molv5"},
-    {"name": "LEVEL 6", "key": "LEVEL_6", "image_key": "molv6"},
+    {"name": "LEVEL 2", "key": "LEVEL_2", "image_key": "lv2"},
+    {"name": "LEVEL 3", "key": "LEVEL_3", "image_key": "lv3"},
+    {"name": "LEVEL 4", "key": "LEVEL_4", "image_key": "lv4"},
+    {"name": "LEVEL 5", "key": "LEVEL_5", "image_key": "lv5"},
+    {"name": "LEVEL 6", "key": "LEVEL_6", "image_key": "lv6"},
 ]
 
 # ĐƯỜNG DẪN MẪU ĐẾN FONT HỖ TRỢ TIẾNG VIỆT
@@ -77,7 +77,7 @@ class LevelSelectScreen(BaseScreen):
         try:
             assets['nen_lv'] = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nen_lv.png')).convert(), (SCREEN_WIDTH, SCREEN_HEIGHT))
             
-            assets['khoalv'] = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'khoalv.png')).convert_alpha(), (60, 60))
+            assets['khoalv'] = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'khoalv.png')).convert_alpha(), (130, 130))
             
             # TẢI NÚT CÀI ĐẶT
             assets['nut_caidat'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nutcaidat.png')).convert_alpha()
@@ -94,12 +94,19 @@ class LevelSelectScreen(BaseScreen):
                 image_key = level_data['image_key']
                 path = os.path.join(ASSETS_IMG_DIR, f'{image_key}.png')
                 if os.path.exists(path):
-                    assets[image_key] = pygame.transform.scale(pygame.image.load(path).convert_alpha(), (200, 120))
+                    assets[image_key] = pygame.transform.scale(pygame.image.load(path).convert_alpha(), (170, 90))
                 else:
-                    surface = pygame.Surface((200, 120), pygame.SRCALPHA)
+                    surface = pygame.Surface((170, 90), pygame.SRCALPHA)
                     surface.fill((200, 100, 100, 200)) 
                     assets[image_key] = surface
 
+                #Tai anh ngoi sao
+                star_path = os.path.join(ASSETS_IMG_DIR, 'sao.png')
+                if os.path.exists(star_path):
+                    assets['star_icon'] = pygame.transform.scale(pygame.image.load(star_path).convert_alpha(), (20, 20))
+                else:
+                    assets['star_icon'] = pygame.Surface((20, 20), pygame.SRCALPHA); assets['star_icon'].fill((255, 255, 0, 200))
+            
             # Tải các assets settings
             assets['nen_caidat'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'anvao_caidat.png')).convert_alpha()
             assets['nen_caidat'] = pygame.transform.scale(assets['nen_caidat'], (400, 450)) 
@@ -115,13 +122,7 @@ class LevelSelectScreen(BaseScreen):
             assets['nen_caidat'] = pygame.Surface((400, 450)); assets['nen_caidat'].fill((200, 150, 150))
             assets['on'] = pygame.Surface((50, 30)); assets['on'].fill(COLOR_CORRECT)
             assets['off'] = pygame.Surface((50, 30)); assets['off'].fill(COLOR_WRONG)
-            
-            for level_data in LEVELS:
-                image_key = level_data['image_key']
-                surface = pygame.Surface((200, 120), pygame.SRCALPHA)
-                surface.fill((200, 100, 100, 200)) 
-                assets[image_key] = surface
-            
+        
         return assets
         
     def handle_input(self, event):
@@ -152,17 +153,27 @@ class LevelSelectScreen(BaseScreen):
                 self.show_settings = True 
                 return
         
-            # --- ƯU TIÊN 3: XỬ LÝ CÁC NÚT LEVEL ---
+# --- ƯU TIÊN 3: XỬ LÝ CÁC NÚT LEVEL ---
             for rect_data in self.level_rects:
                 i = rect_data['index']
                 rect = rect_data['rect']
                 if rect.collidepoint(mouse_pos):
+                    # Lấy dữ liệu sao để kiểm tra khóa
                     stars_data = self.game_manager.game_data.get('stars', [0] * len(LEVELS)) 
+                    
+                    # KIỂM TRA LOGIC KHÓA:
+                    # i > 0: Không phải là Level 1
+                    # stars_data[i-1] == 0: Level trước đó chưa đạt được sao nào
                     is_locked = (i > 0 and stars_data[i-1] == 0)
+                    
                     if not is_locked:
                         selected_level = LEVELS[i]
                         self.game_manager.current_level_key = selected_level['key']
                         self.game_manager.switch_screen("GAMEPLAY")
+                        return
+                    else:
+                        # Tùy chọn: Thêm âm thanh/hiệu ứng nhỏ báo là level bị khóa
+                        print("Level đang bị khóa!") 
                         return
 
     def update(self):
@@ -210,11 +221,12 @@ class LevelSelectScreen(BaseScreen):
         surface.blit(self.assets['nut_caidat'], self.setting_button_rect.topleft)
 
         # 5. VẼ CÁC NÚT LEVEL (Bố cục lưới 3x2)
-        level_button_width = 200
-        level_button_height = 120
+        level_button_width = 170
+        level_button_height = 90
         padding_x = 30
         padding_y = 30
-        
+        star_spacing = 4
+
         # Tính toán vị trí bắt đầu để căn giữa các nút level (Giao diện 3x2)
         total_width_row = (level_button_width * 3) + (padding_x * 2)
         start_x = (SCREEN_WIDTH - total_width_row) // 2
@@ -234,9 +246,35 @@ class LevelSelectScreen(BaseScreen):
             self.level_rects.append({'index': i, 'rect': button_rect})
             
             is_locked = (i > 0 and stars_data[i-1] == 0)
-            
-
+            # Vẽ hình ảnh nút level
+            level_image = self.assets.get(level['image_key'])
+            if level_image:
+                # Nếu không bị khóa, vẽ level bình thường
+                surface.blit(level_image, button_rect.topleft)
                 
+        # --- VẼ VÒNG LẶP HÌNH ẢNH SAO ---
+                current_stars = stars_data[i]
+                star_asset = self.assets.get('star_icon')
+                if current_stars > 0 and star_asset:
+                    star_size = star_asset.get_width()
+                    # Tính toán tổng chiều rộng của tất cả sao để căn giữa
+                    total_stars_width = (current_stars * star_size) + ((current_stars - 1) * star_spacing)
+                    # Vị trí X bắt đầu để căn giữa toàn bộ khối sao
+                    start_star_x = button_rect.centerx - (total_stars_width // 2)
+                    star_y = button_rect.bottom - star_size - 5 # Đặt sao cách đáy nút 5px
+                    for star_index in range(current_stars):
+                        star_x = start_star_x + star_index * (star_size + star_spacing)
+                        surface.blit(star_asset, (star_x, star_y))
+            
+            # Vẽ khóa nếu level bị khóa
+            if is_locked and self.assets.get('khoalv'):
+
+                khoa_asset = self.assets['khoalv']
+                khoa_rect = khoa_asset.get_rect()
+                khoa_rect.topleft = (button_rect.left, button_rect.top)
+                surface.blit(khoa_asset, khoa_rect.topleft)
+
+  
         # 7. VẼ POP-UP CÀI ĐẶT nếu show_settings = True
         if self.show_settings:
             self._draw_settings_popup(surface)

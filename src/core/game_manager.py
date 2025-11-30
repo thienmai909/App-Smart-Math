@@ -123,3 +123,66 @@ class GameManager:
                     
             except Exception as e:
                 print(f"Lỗi khi lưu điểm: {e}")
+                # src/core/game_manager.py (Cần được cập nhật)
+import importlib.util
+import os
+# ... (các imports khác)
+
+class GameManager:
+    def __init__(self, screen_width, screen_height):
+        # ... (khởi tạo pygame, màn hình, v.v.)
+        
+        # --- TRẠNG THÁI LEVEL VÀ CÂU HỎI ---
+        self.questions_pool = [] # Danh sách câu hỏi của level hiện tại
+        self.question_index = 0  # Chỉ số câu hỏi hiện tại
+        
+        # Lưu trữ trạng thái Level (Level 1 mở, các Level khác khóa)
+        # Giả sử Level 1 mở, các Level khác khóa ban đầu
+        self.level_data = {
+            1: {'unlocked': True, 'stars': 0},
+            2: {'unlocked': False, 'stars': 0},
+            3: {'unlocked': False, 'stars': 0},
+            4: {'unlocked': False, 'stars': 0},
+            5: {'unlocked': False, 'stars': 0},
+            6: {'unlocked': False, 'stars': 0},
+        }
+
+    # --- HÀM TẢI CÂU HỎI ---
+    def load_questions_for_level(self, level_id):
+        try:
+            # 1. Định vị file questions.py (Giả định nằm trong thư mục core)
+            questions_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'questions.py')
+            
+            # 2. Load module (đọc file questions.py)
+            spec = importlib.util.spec_from_file_location("questions_module", questions_file_path)
+            questions_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(questions_module)
+            
+            # 3. Lấy dữ liệu cho Level tương ứng
+            if level_id in questions_module.LEVEL_QUESTIONS:
+                return questions_module.LEVEL_QUESTIONS[level_id]
+            else:
+                print(f"Không tìm thấy dữ liệu cho Level {level_id} trong questions.py")
+                return []
+                
+        except Exception as e:
+            print(f"Lỗi khi tải câu hỏi từ questions.py: {e}")
+            return []
+
+    # --- CÁC HÀM TRẠNG THÁI LEVEL (Được gọi bởi LevelSelectScreen) ---
+    def get_level_unlocked_status(self, level_id):
+        return self.level_data.get(level_id, {}).get('unlocked', False)
+
+    def get_level_stars(self, level_id):
+        return self.level_data.get(level_id, {}).get('stars', 0)
+        
+    # --- CÁC HÀM KHÁC (Đã có trong code trước) ---
+    def calculate_stars(self, score):
+        # ... (logic tính sao dựa trên điểm)
+        pass 
+        
+    def save_score(self, score):
+        # ... (logic lưu điểm vào level_data và unlock level tiếp theo)
+        pass
+        
+    # ... (các hàm switch_screen, set_screen khác)
