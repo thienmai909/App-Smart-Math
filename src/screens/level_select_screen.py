@@ -13,7 +13,6 @@ LEVELS = [
     {"name": "LEVEL 6", "key": "LEVEL_6", "image_key": "lv6"},
 ]
 
-# ĐƯỜNG DẪN MẪU ĐẾN FONT HỖ TRỢ TIẾNG VIỆT
 try:
     VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'UTM-Avo.ttf')
 except NameError:
@@ -47,17 +46,15 @@ class LevelSelectScreen(BaseScreen):
             self.font_small = pygame.font.SysFont("Arial", FONT_SIZE_SMALL)
             
         self.level_rects = []
-        # LOẠI BỎ NÚT BACK (chỉ giữ lại Rect Setting)
-        self.setting_button_rect = pygame.Rect(0, 0, 1, 1) 
-        
-        self.assets = self._load_assets() # Tải assets
+
+        self.setting_button_rect = pygame.Rect(0, 0, 1, 1)       
+        self.assets = self._load_assets()
         
         # Khởi tạo rect cho tiêu đề "LEVEL"
         self.level_title_text_surface = self.font_title.render("LEVEL", True, (255, 204, 0))
-        # ĐIỀU CHỈNH Y CHO TOÀN BỘ KHỐI TIÊU ĐỀ XUỐNG THẤP HƠN (Ví dụ: 150)
         self.level_title_rect = self.assets['level_title_bg'].get_rect(center=(SCREEN_WIDTH // 2, 150))
         
-        # Rect cho thanh progress bar (Đường màu cam dưới tiêu đề)
+        # Rect cho thanh progress bar 
         self.progress_bar_bg_rect = pygame.Rect(0, 0, PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT)
         self.progress_bar_bg_rect.center = (SCREEN_WIDTH // 2, self.level_title_rect.bottom + 10)
         
@@ -85,11 +82,11 @@ class LevelSelectScreen(BaseScreen):
             self.setting_button_rect.size = assets['nut_caidat'].get_size()
             self.setting_button_rect.topright = (SCREEN_WIDTH - 20, 20) 
             
-            # TẢI LEVEL TITLE BG VÀ PROGRESS BAR (Dùng Surface thay thế)
+            # TẢI LEVEL TITLE BG VÀ PROGRESS BAR 
             assets['level_title_bg'] = pygame.Surface((500, 100), pygame.SRCALPHA); assets['level_title_bg'].fill((255, 255, 255, 200))
             assets['progress_fill'] = pygame.Surface((1, 1), pygame.SRCALPHA); assets['progress_fill'].fill(COLOR_CORRECT)
             
-            # Tải hình ảnh cho nút level (molvX.png)
+            # Tải hình ảnh cho nút level 
             for level_data in LEVELS:
                 image_key = level_data['image_key']
                 path = os.path.join(ASSETS_IMG_DIR, f'{image_key}.png')
@@ -153,7 +150,7 @@ class LevelSelectScreen(BaseScreen):
                 self.show_settings = True 
                 return
         
-# --- ƯU TIÊN 3: XỬ LÝ CÁC NÚT LEVEL ---
+            # --- ƯU TIÊN 3: XỬ LÝ CÁC NÚT LEVEL ---
             for rect_data in self.level_rects:
                 i = rect_data['index']
                 rect = rect_data['rect']
@@ -162,17 +159,13 @@ class LevelSelectScreen(BaseScreen):
                     stars_data = self.game_manager.game_data.get('stars', [0] * len(LEVELS)) 
                     
                     # KIỂM TRA LOGIC KHÓA:
-                    # i > 0: Không phải là Level 1
-                    # stars_data[i-1] == 0: Level trước đó chưa đạt được sao nào
-                    is_locked = (i > 0 and stars_data[i-1] == 0)
-                    
+                    is_locked = (i > 0 and stars_data[i-1] == 0)       
                     if not is_locked:
                         selected_level = LEVELS[i]
                         self.game_manager.current_level_key = selected_level['key']
                         self.game_manager.switch_screen("GAMEPLAY")
                         return
                     else:
-                        # Tùy chọn: Thêm âm thanh/hiệu ứng nhỏ báo là level bị khóa
                         print("Level đang bị khóa!") 
                         return
 
@@ -184,19 +177,16 @@ class LevelSelectScreen(BaseScreen):
                 pygame.mixer.set_reserved(1)
             
     def _draw_settings_popup(self, surface):
-        """Vẽ pop-up cài đặt lên trên màn hình."""
-        
+        """Vẽ pop-up cài đặt lên trên màn hình."""   
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 150)) 
-        surface.blit(overlay, (0, 0))
-        
+        surface.blit(overlay, (0, 0))   
         surface.blit(self.assets['nen_caidat'], self.settings_rect.topleft)
         
          # Vẽ icon ON/OFF
         sound_icon = self.assets['on'] if self.sound_on else self.assets['off']
         sound_icon_rect = sound_icon.get_rect(midright=(self.settings_rect.right - 40, self.sound_rect.centery))
         surface.blit(sound_icon, sound_icon_rect.topleft)
-
         bgm_icon = self.assets['on'] if self.bgm_on else self.assets['off']
         bgm_icon_rect = bgm_icon.get_rect(midright=(self.settings_rect.right - 40, self.bgm_rect.centery))
         surface.blit(bgm_icon, bgm_icon_rect.topleft)
@@ -214,37 +204,31 @@ class LevelSelectScreen(BaseScreen):
             
         self.level_rects = [] # Reset list rects mỗi lần vẽ
         
-        # 1. VẼ NỀN LEVEL
+        # VẼ NỀN LEVEL
         surface.blit(self.assets['nen_lv'], (0, 0))
 
-        # 3. VẼ NÚT CÀI ĐẶT (VỊ TRÍ ĐÃ TỐI ƯU)
+        # VẼ NÚT CÀI ĐẶT 
         surface.blit(self.assets['nut_caidat'], self.setting_button_rect.topleft)
 
-        # 5. VẼ CÁC NÚT LEVEL (Bố cục lưới 3x2)
+        # VẼ CÁC NÚT LEVEL
         level_button_width = 170
         level_button_height = 90
         padding_x = 30
         padding_y = 30
         star_spacing = 4
 
-        # Tính toán vị trí bắt đầu để căn giữa các nút level (Giao diện 3x2)
+        # Tính toán vị trí bắt đầu để căn giữa các nút level 
         total_width_row = (level_button_width * 3) + (padding_x * 2)
         start_x = (SCREEN_WIDTH - total_width_row) // 2
         start_y = self.progress_bar_bg_rect.bottom + 50 
-
         stars_data = self.game_manager.game_data.get('stars', [0] * len(LEVELS))
-
         for i, level in enumerate(LEVELS):
             row = i // 3 
             col = i % 3 
-            
             x_pos = start_x + col * (level_button_width + padding_x)
             y_pos = start_y + row * (level_button_height + padding_y)
-
-
             button_rect = pygame.Rect(x_pos, y_pos, level_button_width, level_button_height)
             self.level_rects.append({'index': i, 'rect': button_rect})
-            
             is_locked = (i > 0 and stars_data[i-1] == 0)
             # Vẽ hình ảnh nút level
             level_image = self.assets.get(level['image_key'])
@@ -268,13 +252,11 @@ class LevelSelectScreen(BaseScreen):
             
             # Vẽ khóa nếu level bị khóa
             if is_locked and self.assets.get('khoalv'):
-
                 khoa_asset = self.assets['khoalv']
                 khoa_rect = khoa_asset.get_rect()
                 khoa_rect.topleft = (button_rect.left, button_rect.top)
                 surface.blit(khoa_asset, khoa_rect.topleft)
-
   
-        # 7. VẼ POP-UP CÀI ĐẶT nếu show_settings = True
+        #  VẼ POP-UP CÀI ĐẶT nếu show_settings = True
         if self.show_settings:
             self._draw_settings_popup(surface)
