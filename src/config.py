@@ -30,16 +30,14 @@ STAR_THRESHOLDS = {
 }
 
 # --- MÀU SẮC ---
+COLOR_BG = (255, 245, 220)      # Màu nền chính (Vàng kem Sáng) - Giữ nguyên
 COLOR_WHITE = (255, 255, 255)
-COLOR_BLACK = (0, 0, 0)
-COLOR_BG = (28, 28, 28) 
-COLOR_TEXT = (255, 240, 200) 
-COLOR_TITLE = (255, 180, 0) 
-COLOR_ACCENT = (0, 150, 255) 
-COLOR_CORRECT = (0, 200, 0) 
-COLOR_WRONG = (255, 50, 50) 
-COLOR_INFO = (255, 120, 0) 
-
+COLOR_TEXT = (0, 0, 0)          # <--- [ĐÃ SỬA] Màu chữ chính (Đen Thuần)
+COLOR_ACCENT = (255, 105, 180)  # Màu nhấn (Hồng Nóng/Rực rỡ) - Giữ nguyên
+COLOR_TITLE = (128, 0, 128)     # Màu tiêu đề (Tím Hoàng Gia Đậm) - Giữ nguyên
+COLOR_INFO = (255, 165, 0)      # Màu thông tin (Cam Sáng/Rực Rỡ) - Giữ nguyên
+COLOR_CORRECT = (0, 128, 0)     # Màu đáp án đúng (Xanh Lá Cây Cỏ Đậm) - Giữ nguyên
+COLOR_WRONG = (255, 0, 0)
 # --- FONT SIZE ---
 FONT_SIZE_TITLE = 80
 FONT_SIZE_LARGE = 48
