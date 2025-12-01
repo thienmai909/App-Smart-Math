@@ -3,15 +3,9 @@ import os
 import time
 import random 
 from src.screens.base_screen import BaseScreen
-from src.config import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_BG, COLOR_TEXT, COLOR_WHITE, COLOR_ACCENT, 
-    COLOR_CORRECT, COLOR_WRONG, FONT_SIZE_TITLE, FONT_SIZE_LARGE, FONT_SIZE_MEDIUM, 
-    FONT_SIZE_SMALL, TIME_LIMIT, POINTS_CORRECT, POINTS_WRONG, COLOR_INFO,
-    ASSETS_FONT_DIR, ASSETS_IMG_DIR
-)
+from src.config import *
 
 VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'UTM-Avo.ttf')
-# -------------------------------------------------------------------
 
 class GameplayScreen(BaseScreen):
     def __init__(self, game_manager):
@@ -53,6 +47,7 @@ class GameplayScreen(BaseScreen):
         self.STAR_SIZE = 50 
         self.STAR_BAR_SIZE = (300, 60)
         self.back_button_rect = pygame.Rect(20, 20, 100, 40) 
+        self.settings_button_rect = pygame.Rect(SCREEN_WIDTH - 150, 20, 100, 40) # Rect cho nút Cài đặt
         
         self.GAME_OVER_BUTTON_SIZE = (250, 60) 
         self.game_over_button_rect = pygame.Rect(0, 0, *self.GAME_OVER_BUTTON_SIZE)
@@ -82,6 +77,7 @@ class GameplayScreen(BaseScreen):
         
     def _load_assets(self):
         assets = {}
+        assets['is_settings_fallback'] = False # Cờ theo dõi việc sử dụng fallback
         try:
             # 1. NỀN MÀN HÌNH CHÍNH (nenchinh.png)
             try:
@@ -114,6 +110,19 @@ class GameplayScreen(BaseScreen):
             assets['nut_back'] = pygame.transform.scale(assets['nut_back'], (80, 30))
             self.back_button_rect.size = assets['nut_back'].get_size() 
             self.back_button_rect.topleft = (20, 20)
+            
+            # 5b. NÚT SETTINGS (nutcaidat.png)
+            try:
+                # SỬ DỤNG TÊN FILE nutcaidat.png CHÍNH XÁC
+                assets['nutcaidat'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nutcaidat.png')).convert_alpha() 
+                assets['nutcaidat'] = pygame.transform.scale(assets['nutcaidat'], (80, 30))
+            except pygame.error:
+                print("Không tìm thấy nutcaidat.png. Sử dụng surface màu mặc định.")
+                assets['nutcaidat'] = pygame.Surface((80, 30)); assets['nutcaidat'].fill(COLOR_INFO) 
+                assets['is_settings_fallback'] = True # Bật cờ fallback
+            
+            self.settings_button_rect.size = assets['nutcaidat'].get_size()
+            self.settings_button_rect.topright = (SCREEN_WIDTH - 20, 20) 
 
             # 6. NÚT NEXT (nut_next.png)
             try:
@@ -153,6 +162,8 @@ class GameplayScreen(BaseScreen):
             text_go = self.font_title.render("GAME OVER", True, COLOR_TITLE)
             assets['game_over_image'].blit(text_go, text_go.get_rect(center=(200, 40)))
             assets['sao_large'] = None
+            assets['nutcaidat'] = pygame.Surface((80, 30)); assets['nutcaidat'].fill(COLOR_INFO) 
+            assets['is_settings_fallback'] = True # Bật cờ fallback
             for i in range(4):
                     assets[f'thanh_sao_{i}'] = pygame.Surface(self.STAR_BAR_SIZE); assets[f'thanh_sao_{i}'].fill((200, 200, 200))
         return assets
@@ -216,6 +227,11 @@ class GameplayScreen(BaseScreen):
                 self.game_manager.switch_screen("LEVEL")
                 return
 
+            # XỬ LÝ NÚT SETTINGS
+            if self.settings_button_rect.collidepoint(mouse_pos):
+                self.game_manager.switch_screen("SETTINGS") 
+                return
+
             if self.selected_answer_index is None:
                 for i, rect in enumerate(self.button_rects):
                     if rect.collidepoint(mouse_pos):
@@ -276,11 +292,21 @@ class GameplayScreen(BaseScreen):
             timer_text_rect = timer_text.get_rect(center=(SCREEN_WIDTH // 2, 30))
             surface.blit(timer_text, timer_text_rect)
 
+        # Cập nhật vị trí điểm số để nhường chỗ cho nút Settings
         score_text = self.font_small.render(f"Điểm: {self.score}", True, COLOR_TEXT)
-        surface.blit(score_text, (SCREEN_WIDTH - 20 - score_text.get_width(), 20))
+        surface.blit(score_text, (SCREEN_WIDTH - 120 - score_text.get_width(), 20)) 
         
         # 2. VẼ NÚT BACK/LEVEL SELECT
         surface.blit(self.assets['nut_back'], self.back_button_rect.topleft)
+        
+        # 2b. VẼ NÚT SETTINGS
+        surface.blit(self.assets['nutcaidat'], self.settings_button_rect.topleft)
+        
+        # Thêm chữ "Cài đặt" nếu đang dùng fallback Surface
+        if self.assets['is_settings_fallback']:
+             setting_text = self.font_small.render("Cài đặt", True, COLOR_WHITE)
+             setting_rect = setting_text.get_rect(center=self.settings_button_rect.center)
+             surface.blit(setting_text, setting_rect)
         
         if not self.game_over and self.current_question:
             # 3. VẼ CÂU HỎI (Dùng nen_cauhoi)
