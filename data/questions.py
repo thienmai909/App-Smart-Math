@@ -1,23 +1,24 @@
 # data/questions.py
 import random
-from math import gcd
-from fractions import Fraction
-import os
+import math
 
 def _create_options(correct_answer, min_val=0, max_val=100):
     """ĐẢM BẢO đáp án đúng luôn nằm trong 4 lựa chọn"""
     correct_answer = int(correct_answer)
     options = set([correct_answer])
 
+    # Tạo đáp án sai gần đúng
     while len(options) < 4:
         offset = random.randint(-15, 15)
         if offset == 0:
             continue
         wrong = correct_answer + offset
-        if min_val <= wrong <= max_val:
+        if min_val <= wrong <= max_val and wrong != correct_answer:
             options.add(wrong)
 
+    # Nếu vẫn thiếu thì thêm bù
     while len(options) < 4:
+        # Chọn số giả ngẫu nhiên trong khoảng chấp nhận được
         fake = random.randint(max(min_val, correct_answer - 30),
                               min(max_val, correct_answer + 30))
         if fake != correct_answer:
@@ -27,213 +28,176 @@ def _create_options(correct_answer, min_val=0, max_val=100):
     random.shuffle(result)
     return result
 
+
+# --- Level 1: Phép Cộng - Trừ (1-20) ---
 def get_level_1_questions(num_questions=20):
     questions = []
     for _ in range(num_questions):
         a = random.randint(1, 20)
         b = random.randint(1, 20)
-        if random.choice([True, False]):
+        
+        op = random.choice(['+', '-'])
+        
+        if op == '+':
             question_text = f"{a} + {b} = ?"
-            correct_answer = a + b
-            options = _create_options(correct_answer, min_val=0, max_val=50)
-        else:
-            if a < b: a, b = b, a
+            answer = a + b
+        else: # Phép trừ đảm bảo kết quả không âm
+            if a < b: a, b = b, a # Hoán đổi
             question_text = f"{a} - {b} = ?"
-            correct_answer = a - b
-            options = _create_options(correct_answer, min_val=0, max_val=20)
-        questions.append({"question": question_text, "options": options, "answer": correct_answer})
+            answer = a - b
+            
+        options = _create_options(answer, min_val=0, max_val=40)
+        questions.append({
+            "question": question_text,
+            "options": options,
+            "answer": answer
+        })
     return questions
 
+
+# --- Level 2: Phép Nhân - Chia (2-9) ---
 def get_level_2_questions(num_questions=20):
     questions = []
     for _ in range(num_questions):
         a = random.randint(2, 9)
         b = random.randint(2, 9)
-        if random.choice([True, False]):
-            question_text = f"{a} × {b} = ?"
-            correct_answer = a * b
-            options = _create_options(correct_answer, min_val=4, max_val=81)
-        else:
-            product = a * b
-            question_text = f"{product} : {a} = ?"
-            correct_answer = b
-            options = _create_options(correct_answer, min_val=2, max_val=9)
-        questions.append({"question": question_text, "options": options, "answer": correct_answer})
-    return questions
-
-def get_level_3_questions(num_questions=20):
-    questions = []
-    templates = [
-        ("({a} + {b}) × {c}", lambda a,b,c: (a+b)*c),
-        ("{a} × ({b} + {c})", lambda a,b,c: a*(b+c)),
-        ("({a} × {b}) + {c}", lambda a,b,c: a*b + c),
-        ("{a} + ({b} × {c})", lambda a,b,c: a + b*c),
-        ("({a} × {b}) − {c}", lambda a,b,c: a*b - c),
-    ]
-    for _ in range(num_questions):
-        temp, func = random.choice(templates)
-        a = random.randint(2, 12)
-        b = random.randint(2, 10)
-        c = random.randint(2, 9)
-        if "−" in temp:
-            while a*b <= c:
-                a += 2
-                b += 1
-        ans = func(a, b, c)
-        q = temp.format(a=a, b=b, c=c) + " = ?"
-        questions.append({"question": q, "options": _create_options(ans, 0, 200), "answer": ans})
-    return questions
-
-def get_level_4_questions(num_questions=20):
-    questions = []
-    for _ in range(num_questions):
-        op = random.choice(["+", "-", "×", ":"])
-        x = random.randint(5, 30)
-        if op == "+":
-            a = random.randint(2, 15)
-            b = x + a
-            question_text = f"Tìm x: x + {a} = {b}"
-        elif op == "-":
-            a = random.randint(2, 15)
-            x = random.randint(a + 5, a + 30)
-            b = x - a
-            question_text = f"Tìm x: x − {a} = {b}"
-        elif op == "×":
-            a = random.randint(2, 15)
-            b = x * a
-            question_text = f"Tìm x: x × {a} = {b}"
-        else:
-            a = random.randint(2, 10)
-            x = random.randint(6, 30) 
-            b = x * a
-            question_text = f"Tìm x: {b} : {a} = x"
-
-        options = _create_options(x, min_val=1, max_val=50)
-        questions.append({"question": question_text, "options": options, "answer": x})
-    return questions
-
-def _create_fraction_options(correct_frac, num_options=4):
-    num, den = correct_frac.numerator, correct_frac.denominator
-    options = [correct_frac]
-
-    while len(options) < num_options:
-        offset = random.randint(-5, 5)
-        if offset == 0: continue
-        wrong_num = num + offset
-        wrong_den = den + random.randint(-3, 3)
-
-        if wrong_den <= 1: wrong_den = den
-
-        wrong_g = gcd(wrong_num, wrong_den)
-        wrong_frac = Fraction(wrong_num // wrong_g, wrong_den // wrong_g)
-
-        if wrong_frac not in options and wrong_frac != correct_frac:
-            options.append(wrong_frac)
-
-    while len(options) < num_options:
-        fake = Fraction(random.randint(1, 20), random.randint(2, 20))
-        if fake not in options: options.append(fake)
-
-    random.shuffle(options)
-    return [f"{f.numerator}/{f.denominator}" for f in options]
-
-def get_level_5_questions(num_questions=20):
-    questions = []
-    for _ in range(num_questions):
-        type_q = random.choice(["rutgon", "cong", "tru", "nhan", "chia"])
-
-        if type_q == "rutgon":
-            multiplier = random.randint(2, 10)
-            num = random.randint(2, 15) * multiplier
-            den = random.randint(2, 15) * multiplier
-            frac = Fraction(num, den)
-            question_text = f"Rút gọn phân số: {num}/{den}"
-            correct_str = f"{frac.numerator}/{frac.denominator}"
-
-        elif type_q == "cong":
-            f1 = Fraction(random.randint(1, 12), random.randint(2, 12))
-            f2 = Fraction(random.randint(1, 12), random.randint(2, 12))
-            result = f1 + f2
-            question_text = f"Tính: {f1.numerator}/{f1.denominator} + {f2.numerator}/{f2.denominator} = ?"
-            correct_str = f"{result.numerator}/{result.denominator}"
-
-        elif type_q == "tru":
-            f1 = Fraction(random.randint(3, 15), random.randint(2, 10))
-            f2 = Fraction(random.randint(1, 8), random.randint(2, 10))
-            if f1 < f2: f1, f2 = f2, f1
-            result = f1 - f2
-            question_text = f"Tính: {f1.numerator}/{f1.denominator} - {f2.numerator}/{f2.denominator} = ?"
-            correct_str = f"{result.numerator}/{result.denominator}"
-
-        elif type_q == "nhan":
-            f1 = Fraction(random.randint(1, 10), random.randint(2, 10))
-            f2 = Fraction(random.randint(1, 10), random.randint(2, 10))
-            result = f1 * f2
-            question_text = f"Tính: {f1.numerator}/{f1.denominator} × {f2.numerator}/{f2.denominator} = ?"
-            correct_str = f"{result.numerator}/{result.denominator}"
-
-        else:
-            f1 = Fraction(random.randint(2, 12), random.randint(2, 8))
-            f2 = Fraction(random.randint(2, 10), random.randint(2, 10))
-            result = f1 / f2
-            if result.denominator > 20: result = Fraction(random.randint(1, 10), random.randint(2, 10))
-            question_text = f"Tính: {f1.numerator}/{f1.denominator} : {f2.numerator}/{f2.denominator} = ?"
-            correct_str = f"{result.numerator}/{result.denominator}"
-
-        options = _create_fraction_options(Fraction(correct_str))
-
+        
+        op = random.choice(['*', '/'])
+        
+        if op == '*':
+            question_text = f"{a} x {b} = ?"
+            answer = a * b
+        else: # Phép chia
+            answer = a
+            a = a * b # Tạo số chia hết
+            question_text = f"{a} : {b} = ?"
+            
+        options = _create_options(answer, min_val=1, max_val=81)
         questions.append({
             "question": question_text,
             "options": options,
-            "answer": correct_str,
+            "answer": answer
         })
     return questions
 
+# --- Level 3: Hỗn hợp có ngoặc (Nâng cao) ---
+def get_level_3_questions(num_questions=20):
+    questions = []
+    for _ in range(num_questions):
+        pattern = random.randint(1, 3)
+        
+        if pattern == 1: # (a + b) x c
+            a = random.randint(2, 8)
+            b = random.randint(2, 8)
+            c = random.randint(2, 5)
+            question_text = f"({a} + {b}) x {c} = ?"
+            answer = (a + b) * c
+        elif pattern == 2: # a x (b - c)
+            a = random.randint(2, 5)
+            b = random.randint(10, 20)
+            c = random.randint(2, 8)
+            question_text = f"{a} x ({b} - {c}) = ?"
+            answer = a * (b - c)
+        else: # (a - b) : c (đảm bảo chia hết)
+            c = random.randint(2, 5)
+            res = random.randint(5, 15)
+            diff = res * c
+            b = random.randint(2, 10)
+            a = diff + b
+            question_text = f"({a} - {b}) : {c} = ?"
+            answer = res
+            
+        options = _create_options(answer, min_val=1, max_val=100)
+        questions.append({
+            "question": question_text,
+            "options": options,
+            "answer": answer
+        })
+    return questions
+
+# --- Level 4: Tìm X cơ bản (Cộng/Trừ) ---
+def get_level_4_questions(num_questions=20):
+    questions = []
+    for _ in range(num_questions):
+        pattern = random.randint(1, 3)
+        
+        if pattern == 1: # x + a = b
+            x = random.randint(10, 50)
+            a = random.randint(5, 20)
+            b = x + a
+            question_text = f"Tìm x: x + {a} = {b}"
+            answer = x
+        elif pattern == 2: # a - x = b
+            a = random.randint(30, 80)
+            x = random.randint(5, 30)
+            b = a - x
+            question_text = f"Tìm x: {a} - x = {b}"
+            answer = x
+        else: # x - a = b
+            a = random.randint(5, 20)
+            b = random.randint(30, 50)
+            x = a + b
+            question_text = f"Tìm x: x - {a} = {b}"
+            answer = x
+            
+        options = _create_options(answer, min_val=1, max_val=80)
+        questions.append({
+            "question": question_text,
+            "options": options,
+            "answer": answer
+        })
+    return questions
+
+# --- Level 5: Phân số cơ bản (Đổi sang số nguyên) ---
+def get_level_5_questions(num_questions=20):
+    questions = []
+    for _ in range(num_questions):
+        # Ví dụ đơn giản: Đổi phân số thành số nguyên (tử chia hết cho mẫu)
+        
+        # 3/5 của 100
+        mau = random.choice([2, 4, 5, 10])
+        tu = random.randint(1, mau - 1)
+        
+        # Số bị chia (đảm bảo chia hết)
+        whole = random.randint(1, 10) * mau 
+        
+        question_text = f"{tu}/{mau} của {whole} là bao nhiêu?"
+        answer = int((whole / mau) * tu)
+            
+        options = _create_options(answer, min_val=1, max_val=100)
+        questions.append({
+            "question": question_text,
+            "options": options,
+            "answer": answer
+        })
+    return questions
+
+# --- Level 6: Tìm X nâng cao (Nhân/Chia) ---
 def get_level_6_questions(num_questions=20):
     questions = []
     for _ in range(num_questions):
-        pattern = random.randint(1, 5)
-
-        if pattern == 1:
+        pattern = random.randint(1, 2)
+        
+        if pattern == 1: # a * x = b
+            a = random.randint(2, 9)
+            x = random.randint(5, 15)
+            b = a * x
+            question_text = f"Tìm x: {a} x x = {b}"
+            answer = x
+        else: # x : a = b
             a = random.randint(2, 8)
-            b = random.randint(1, 15)
-            x = random.randint(3, 20)
-            c = a * x + b
-            question_text = f"Giải phương trình: {a}x + {b} = {c}"
+            b = random.randint(5, 15)
+            x = a * b
+            question_text = f"Tìm x: x : {a} = {b}"
             answer = x
-
-        elif pattern == 2:
-            a = random.randint(2, 6)
-            b = random.randint(2, 10)
-            x = random.randint(5, 18)
-            c = a * (x + b)
-            question_text = f"Giải phương trình: {a}(x + {b}) = {c}"
-            answer = x
-
-        elif pattern == 3:
-            a = random.randint(2, 7)
-            b = random.randint(5, 20)
-            x = random.randint(6, 20)
-            c = a * x - b
-            question_text = f"Giải phương trình: {a}x − {b} = {c}"
-            answer = x
-
-        elif pattern == 4:
-            a = random.randint(3, 8)
-            b = random.randint(2, 12)
-            x = random.randint(10, 50)
-            x = ((x + a - 1) // a) * a  
-            c = x // a + b
-            question_text = f"Tìm x (số nguyên): x : {a} + {b} = {c}"
-            answer = x
-
-        else:
-            x = random.randint(8, 25)
-            left_add = random.randint(3, 12)
-            right_add = random.randint(5, 15)
-            question_text = f"Tìm x: 2x + {left_add} = {2*x + left_add + right_add} và x − 5 = {x - 5}"
-            answer = x
-
+            
         options = _create_options(answer, min_val=1, max_val=80)
-        questions.append({"question": question_text, "options": options, "answer": answer})
+        questions.append({
+            "question": question_text,
+            "options": options,
+            "answer": answer
+        })
     return questions
+
+# ============================== TEST KHI CHẠY TRỰC TIẾP (Optional) ==============================
+# if __name__ == "__main__": ...
