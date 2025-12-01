@@ -2,10 +2,10 @@
 import os
 
 # --- THÔNG SỐ MÀN HÌNH ---
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-FPS = 60
-TITLE = "QUIZ GAME MASTER"
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 720
+FPS = 120
+TITLE = "Toán thông minh"
 
 # --- ĐƯỜNG DẪN TÀI NGUYÊN (Khắc phục lỗi NameError) ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -17,8 +17,8 @@ MAIN_FONT = os.path.join(ASSETS_FONT_DIR, 'main_font.ttf')
 
 # --- THÔNG SỐ GAMEPLAY & SAO ---
 TIME_LIMIT = 30 
-POINTS_CORRECT = 100
-POINTS_WRONG = -50 
+POINTS_CORRECT = 5
+POINTS_WRONG = -2
 MAX_QUESTIONS = 20 
 
 MAX_SCORE_PER_LEVEL = MAX_QUESTIONS * POINTS_CORRECT 

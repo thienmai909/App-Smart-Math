@@ -35,3 +35,4 @@ dist/
 
 # --- Logs & Errors ---
 *.log
+src/screens/gameplay_screen.py
