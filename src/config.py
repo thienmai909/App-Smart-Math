@@ -3,7 +3,7 @@ import os
 
 # --- THÔNG SỐ MÀN HÌNH ---
 SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 720
+SCREEN_HEIGHT = 600
 FPS = 120
 TITLE = "Toán thông minh"
 
@@ -11,7 +11,6 @@ TITLE = "Toán thông minh"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(os.path.dirname(BASE_DIR), 'assets')
 ASSETS_IMG_DIR = os.path.join(ASSETS_DIR, 'images') 
-ASSETS_SND_DIR = os.path.join(ASSETS_DIR, 'sounds') 
 ASSETS_FONT_DIR = os.path.join(ASSETS_DIR, 'fonts') 
 ASSETS_SOUND_DIR = os.path.join(ASSETS_DIR, 'sounds')
 MAIN_FONT = os.path.join(ASSETS_FONT_DIR, 'main_font.ttf')

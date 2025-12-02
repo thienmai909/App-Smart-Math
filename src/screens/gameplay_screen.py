@@ -127,9 +127,9 @@ class GameplayScreen(BaseScreen):
             # 5. NÚT SETTINGS (nutcaidat.png)
             try:
                 assets['nutcaidat'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nutcaidat.png')).convert_alpha() 
-                assets['nutcaidat'] = pygame.transform.scale(assets['nutcaidat'], (80, 30))
+                assets['nutcaidat'] = pygame.transform.scale(assets['nutcaidat'], (40, 40))
             except pygame.error:
-                assets['nutcaidat'] = pygame.Surface((80, 30)); assets['nutcaidat'].fill(COLOR_INFO) 
+                assets['nutcaidat'] = pygame.Surface((40, 40)); assets['nutcaidat'].fill(COLOR_INFO) 
                 assets['is_settings_fallback'] = True
             
             self.settings_button_rect.size = assets['nutcaidat'].get_size()

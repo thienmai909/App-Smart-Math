@@ -30,7 +30,7 @@ class MenuScreen(BaseScreen):
         # self.setting_button_rect đã bị loại bỏ 
         self.assets = self._load_assets()
         # CĂN CHỈNH VỊ TRÍ NÚT PLAY CUỐI CÙNG
-        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 215)   
+        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 180)   
         # TÍCH HỢP TƯƠNG TÁC SETTINGS TRỰC TIẾP TẠI LEVEL SCREEN
         self.show_settings = False
         self.settings_rect = self.assets['nen_caidat'].get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
@@ -48,7 +48,7 @@ class MenuScreen(BaseScreen):
             assets['nen_menu'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'giaodiendautien.png')).convert_alpha()
             assets['nen_menu'] = pygame.transform.scale(assets['nen_menu'], (SCREEN_WIDTH, SCREEN_HEIGHT))     
             assets['nutbatdau'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nutbatdau.png')).convert_alpha()
-            assets['nutbatdau'] = pygame.transform.scale(assets['nutbatdau'], (250, 60)) 
+            assets['nutbatdau'] = pygame.transform.scale(assets['nutbatdau'], (250, 50)) 
             self.start_button_rect.size = assets['nutbatdau'].get_size() 
             # TẢI HÌNH ẢNH SETTINGS ĐỂ TRÁNH LỖI KHI TRUY CẬP TRONG __init__
             assets['nut_caidat'] = pygame.Surface((50, 50), pygame.SRCALPHA) # Chỉ cần dummy surface
@@ -59,7 +59,7 @@ class MenuScreen(BaseScreen):
         except pygame.error as e:
             print(f"Lỗi tải hình ảnh Menu: {e}. Vui lòng kiểm tra file ảnh.")
             assets['nen_menu'] = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT)); assets['nen_menu'].fill(COLOR_BG)
-            assets['nutbatdau'] = pygame.Surface((250, 60)); assets['nutbatdau'].fill(COLOR_CORRECT)
+            assets['nutbatdau'] = pygame.Surface((250, 50)); assets['nutbatdau'].fill(COLOR_CORRECT)
             assets['nut_caidat'] = pygame.Surface((50, 50)); assets['nut_caidat'].fill(COLOR_ACCENT)
             assets['nen_caidat'] = pygame.Surface((400, 450)); assets['nen_caidat'].fill((200, 150, 150))
             assets['on'] = pygame.Surface((50, 30)); assets['on'].fill(COLOR_CORRECT)
