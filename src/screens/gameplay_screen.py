@@ -105,12 +105,6 @@ class GameplayScreen(BaseScreen):
                 assets['game_over_image'].blit(text_go, text_go.get_rect(center=(200, 40)))
                 assets['game_over_image'].blit(text_score, text_score.get_rect(center=(200, 100)))
 
-            # 5. NÚT BACK (nut_back)
-            assets['nut_back'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nut_back.png')).convert_alpha()
-            assets['nut_back'] = pygame.transform.scale(assets['nut_back'], (80, 30))
-            self.back_button_rect.size = assets['nut_back'].get_size() 
-            self.back_button_rect.topleft = (20, 20)
-            
             # 5b. NÚT SETTINGS (nutcaidat.png)
             try:
                 # SỬ DỤNG TÊN FILE nutcaidat.png CHÍNH XÁC
@@ -155,7 +149,6 @@ class GameplayScreen(BaseScreen):
             assets['nen_chinh'] = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT)); assets['nen_chinh'].fill(COLOR_BG)
             assets['nen_cauhoi'] = pygame.Surface((650, 150), pygame.SRCALPHA); assets['nen_cauhoi'].fill((255, 255, 255, 150))
             assets['nen_dapan'] = pygame.Surface(self.ANSWER_BUTTON_SIZE, pygame.SRCALPHA); assets['nen_dapan'].fill(COLOR_ACCENT) 
-            assets['nut_back'] = pygame.Surface((150, 60)); assets['nut_back'].fill(COLOR_WRONG)
             assets['nut_next'] = pygame.Surface(self.GAME_OVER_BUTTON_SIZE); assets['nut_next'].fill(COLOR_CORRECT)
             assets['thanh_tiendo'] = pygame.Surface((300, 40)); assets['thanh_tiendo'].fill((200, 200, 200))
             assets['game_over_image'] = pygame.Surface((400, 150), pygame.SRCALPHA); 
@@ -296,8 +289,6 @@ class GameplayScreen(BaseScreen):
         score_text = self.font_small.render(f"Điểm: {self.score}", True, COLOR_TEXT)
         surface.blit(score_text, (SCREEN_WIDTH - 120 - score_text.get_width(), 20)) 
         
-        # 2. VẼ NÚT BACK/LEVEL SELECT
-        surface.blit(self.assets['nut_back'], self.back_button_rect.topleft)
         
         # 2b. VẼ NÚT SETTINGS
         surface.blit(self.assets['nutcaidat'], self.settings_button_rect.topleft)
