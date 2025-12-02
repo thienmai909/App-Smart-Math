@@ -2,9 +2,7 @@
 import pygame
 import os
 from src.screens.base_screen import BaseScreen
-from src.config import * # Giả định các biến cấu hình (SCREEN_WIDTH, FONT_SIZE_*, COLORS, ASSETS_DIR...) đã được định nghĩa ở đây
-
-# Cấu trúc LEVELS mới với image_key
+from src.config import *
 LEVELS = [
     {"name": "LEVEL 1", "key": "LEVEL_1", "image_key": "lv1"},
     {"name": "LEVEL 2", "key": "LEVEL_2", "image_key": "lv2"},
@@ -15,16 +13,15 @@ LEVELS = [
 ]
 
 try:
-    # Đảm bảo ASSETS_FONT_DIR đã được định nghĩa trong src.config
     VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'UTM-Avo.ttf')
 except NameError:
     VIETNAMESE_FONT_PATH = None
+
 
 # THÔNG SỐ PROGRESS BAR CỐ ĐỊNH
 PROGRESS_BAR_WIDTH = 400
 PROGRESS_BAR_HEIGHT = 40
 PROGRESS_BAR_PADDING = 5
-# Giả định ACTION_BUTTON_SIZE = (40, 40) được định nghĩa trong src.config
 ACTION_BUTTON_SIZE = (40, 40) 
 
 class LevelSelectScreen(BaseScreen):
@@ -57,7 +54,7 @@ class LevelSelectScreen(BaseScreen):
         self.replay_button_size = (100, 50) # Kích thước cho nút REPLAY/PLAY
         # Khởi tạo rect cho tiêu đề "LEVEL"
         self.level_title_text_surface = self.font_title.render("LEVEL", True, (255, 204, 0))
-        self.level_title_rect = self.assets['level_title_bg'].get_rect(center=(SCREEN_WIDTH // 2, 250))
+        self.level_title_rect = self.assets['level_title_bg'].get_rect(center=(SCREEN_WIDTH // 2, 150))
         
         # Rect cho thanh progress bar 
         self.progress_bar_bg_rect = pygame.Rect(0, 0, PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT)
@@ -80,7 +77,7 @@ class LevelSelectScreen(BaseScreen):
             # Giả định COLOR_BG được định nghĩa trong src.config
             assets['nen_lv'] = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nen_lv.png')).convert(), (SCREEN_WIDTH, SCREEN_HEIGHT))
             
-            assets['khoalv'] = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'khoalv.png')).convert_alpha(), (130, 130))
+            assets['khoalv'] = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'khoalv.png')).convert_alpha(), (200, 100))
             
             # TẢI NÚT CÀI ĐẶT
             assets['nut_caidat'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nutcaidat.png')).convert_alpha()
@@ -120,7 +117,6 @@ class LevelSelectScreen(BaseScreen):
            #  --- TẢI ẢNH CHO NÚT HOME/REPLAY (Pop-up Settings) ---
             try:
                 # SỬ DỤNG nut_back.png cho nút HOME (BACK)
-                # Giả định ACTION_BUTTON_SIZE được định nghĩa 
                 assets['nut_back_icon'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nut_back.png')).convert_alpha()
                 assets['nut_back_icon'] = pygame.transform.scale(assets['nut_back_icon'], ACTION_BUTTON_SIZE)
             except pygame.error:
@@ -172,7 +168,7 @@ class LevelSelectScreen(BaseScreen):
                     self.game_manager.switch_screen("MENU")
                     self.show_settings = False
                 elif self.replay_rect.collidepoint(mouse_pos):
-                    # Giả định REPLAY chuyển đến menu hoặc màn hình chơi lại level hiện tại (nếu có)
+
                     # Hiện tại đang chuyển về MENU
                     self.game_manager.switch_screen("MENU") 
                     self.show_settings = False
@@ -188,15 +184,18 @@ class LevelSelectScreen(BaseScreen):
                 i = rect_data['index']
                 rect = rect_data['rect']
                 if rect.collidepoint(mouse_pos):
-                    # Lấy dữ liệu sao để kiểm tra khóa
                     stars_data = self.game_manager.game_data.get('stars', [0] * len(LEVELS)) 
                     
                     # KIỂM TRA LOGIC KHÓA:
-                    # Level 1 luôn mở (i=0). Các level khác mở nếu level trước đó (i-1) có ít nhất 1 sao.
                     is_locked = (i > 0 and stars_data[i-1] == 0)      
                     if not is_locked:
                         selected_level = LEVELS[i]
+                        
+                        # GỬI TÍN HIỆU ĐÃ CHỌN LEVEL ĐẾN GAME MANAGER
                         self.game_manager.current_level_key = selected_level['key']
+                        self.game_manager.question_index = 0 
+                        
+                        # Chuyển sang màn hình chơi game
                         self.game_manager.switch_screen("GAMEPLAY")
                         return
                     else:
@@ -213,7 +212,6 @@ class LevelSelectScreen(BaseScreen):
             else:
                 # Nếu sound_off, đặt 1 kênh dự trữ (có thể mute toàn bộ sound effects)
                 pygame.mixer.set_reserved(1)
-            # Logic điều khiển nhạc nền (bgm_on) nên được thực hiện trong game_manager
             
     def _draw_settings_popup(self, surface):
         """Vẽ pop-up cài đặt lên trên màn hình.""" 
@@ -238,12 +236,12 @@ class LevelSelectScreen(BaseScreen):
 
         if 'nut_back_icon' in self.assets:
             icon_asset = self.assets['nut_back_icon']
-            icon_rect = icon_asset.get_rect(midright=(self.home_rect.right +20, self.home_rect.centery))
+            icon_rect = icon_asset.get_rect(midright=(self.home_rect.right -0, self.home_rect.centery))
             surface.blit(icon_asset, icon_rect.topleft)
 
         if 'nut_play_icon' in self.assets:
             icon_asset = self.assets['nut_play_icon']
-            icon_rect = icon_asset.get_rect(midright=(self.replay_rect.right + 20, self.replay_rect.centery))
+            icon_rect = icon_asset.get_rect(midright=(self.replay_rect.right -0, self.replay_rect.centery))
             surface.blit(icon_asset, icon_rect.topleft)
 
         # Nút đóng pop-up (X)
@@ -276,7 +274,7 @@ class LevelSelectScreen(BaseScreen):
 
         # VẼ CÁC NÚT LEVEL
         level_button_width = 200
-        level_button_height = 80
+        level_button_height = 55
         padding_x = 80
         padding_y = 80
         star_spacing = 4
@@ -313,7 +311,7 @@ class LevelSelectScreen(BaseScreen):
                 total_stars_width = (current_stars_level * star_size) + ((current_stars_level - 1) * star_spacing)
                 # Vị trí X bắt đầu để căn giữa toàn bộ khối sao
                 start_star_x = button_rect.centerx - (total_stars_width // 2)
-                star_y = button_rect.bottom - star_size - 5 # Đặt sao cách đáy nút 5px
+                star_y = button_rect.bottom - star_size + 20 # Đặt sao cách đáy nút 5px
                 for star_index in range(current_stars_level):
                     star_x = start_star_x + star_index * (star_size + star_spacing)
                     surface.blit(star_asset, (star_x, star_y))
@@ -328,3 +326,5 @@ class LevelSelectScreen(BaseScreen):
         #  VẼ POP-UP CÀI ĐẶT nếu show_settings = True
         if self.show_settings:
             self._draw_settings_popup(surface)
+        
+        

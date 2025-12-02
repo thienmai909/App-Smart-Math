@@ -3,7 +3,7 @@ import os
 
 # --- THÔNG SỐ MÀN HÌNH ---
 SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 720
+SCREEN_HEIGHT =600
 FPS = 120
 TITLE = "Toán thông minh"
 
@@ -11,7 +11,7 @@ TITLE = "Toán thông minh"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(os.path.dirname(BASE_DIR), 'assets')
 ASSETS_IMG_DIR = os.path.join(ASSETS_DIR, 'images') 
-ASSETS_SND_DIR = os.path.join(ASSETS_DIR, 'sounds') 
+ASSETS_SOUND_DIR = os.path.join(ASSETS_DIR, 'sounds') 
 ASSETS_FONT_DIR = os.path.join(ASSETS_DIR, 'fonts') 
 MAIN_FONT = os.path.join(ASSETS_FONT_DIR, 'main_font.ttf')
 
@@ -45,3 +45,13 @@ FONT_SIZE_TITLE = 80
 FONT_SIZE_LARGE = 48
 FONT_SIZE_MEDIUM = 36
 FONT_SIZE_SMALL = 24
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+ASSETS_DIR = os.path.join(BASE_DIR, '..', 'assets')
+
+# --- THÊM HAI ĐƯỜNG DẪN BỊ LỖI NÀY ---
+ASSETS_MUSIC_DIR = os.path.join(ASSETS_DIR, 'music')  
+ASSETS_SOUND_DIR = os.path.join(ASSETS_DIR, 'sounds') 
+
+# ASSETS_IMG_DIR (Chắc đã tồn tại)
+ASSETS_IMG_DIR = os.path.join(ASSETS_DIR, 'images')
