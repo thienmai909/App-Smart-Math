@@ -223,7 +223,8 @@ class GameplayScreen(BaseScreen):
             self.current_question = {
                 "question": q_data["question"],
                 "answers": answers, 
-                "correct_answer": correct_answer
+                "correct_answer": correct_answer,
+                "question_number": self.game_manager.question_index + 1
             }
             try:
                 self.current_question["correct_index"] = self.current_question["answers"].index(correct_answer)
@@ -406,7 +407,12 @@ class GameplayScreen(BaseScreen):
                 question_rect_center = question_bg_rect.center
             else:
                 question_rect_center = self.question_pos
-            question_text = self.font_large.render(self.current_question["question"], True, COLOR_TEXT)
+
+            #===THÊM SỐ THỨ TỰ CÂU HỎI ===
+            question_num = self.current_question.get("question_number", self.game_manager.question_index)
+            question_content = self.current_question["question"]
+            full_question_text = f"Câu {question_num}: {question_content}"          
+            question_text = self.font_large.render(full_question_text, True, COLOR_TEXT)
             question_rect = question_text.get_rect(center=question_rect_center)
             surface.blit(question_text, question_rect)
 
