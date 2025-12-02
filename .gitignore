@@ -25,7 +25,7 @@ Thumbs.db
 # --- Project Specific ---
 # QUAN TRỌNG: Không up file save game của người chơi lên Git
 # Để mỗi người test game sẽ có file save riêng, không ghi đè nhau
-data/save.json
+# data/save.json
 
 # --- PyInstaller (Nếu đóng gói file exe) ---
 # Các thư mục tạm khi build file exe
