@@ -366,13 +366,13 @@ class GameplayScreen(BaseScreen):
                 if self.assets['sound']['correct'] and self.sound_on:
                      self.assets['sound']['correct'].play()
             else:
-                self.score += POINTS_WRONG 
+                self.score = max(0, self.score + POINTS_WRONG)
                 # PHÁT ÂM THANH SAI 
                 if self.assets['sound']['wrong'] and self.sound_on:
                      self.assets['sound']['wrong'].play()
         else: # Hết giờ (Xử lý như đáp án sai)
             self.answer_is_correct = False
-            self.score += POINTS_WRONG 
+            self.score = max(0, self.score + POINTS_WRONG)
             # PHÁT ÂM THANH SAI 
             if self.assets['sound']['wrong'] and self.sound_on:
                  self.assets['sound']['wrong'].play()
