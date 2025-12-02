@@ -27,7 +27,7 @@ ACTION_BUTTON_SIZE = (40, 40)
 class LevelSelectScreen(BaseScreen):
     def __init__(self, game_manager):
         super().__init__(game_manager)
-        
+    
         # SỬA LỖI FONT
         try:
             if VIETNAMESE_FONT_PATH and os.path.exists(VIETNAMESE_FONT_PATH):
