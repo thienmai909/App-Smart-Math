@@ -79,6 +79,7 @@ class GameManager:
 
         score_ratio = final_score / max_score
             
+        # Logic tính sao dựa trên STAR_THRESHOLDS[1]=0.5, [2]=0.75, [3]=1.0
         if score_ratio >= STAR_THRESHOLDS[3]: 
             return 3
         elif score_ratio >= STAR_THRESHOLDS[2]: 
