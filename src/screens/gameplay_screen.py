@@ -200,6 +200,14 @@ class GameplayScreen(BaseScreen):
 
         return assets
 
+    def on_enter(self):
+        """Khởi động trò chơi khi màn hình này được kích hoạt."""
+        # 1. Reset trạng thái trò chơi
+        self.reset_game()
+        
+        # 2. Tải câu hỏi đầu tiên
+        self.load_next_question()
+
     def reset_game(self):
         self.score = 0
         self.current_question = None
@@ -209,6 +217,7 @@ class GameplayScreen(BaseScreen):
         self.final_stars = 0
         self.start_time = time.time()
         self.show_settings = False
+        # Không gọi load_next_question ở đây
 
     def load_next_question(self):
         
@@ -408,13 +417,35 @@ class GameplayScreen(BaseScreen):
             else:
                 question_rect_center = self.question_pos
 
-            #===THÊM SỐ THỨ TỰ CÂU HỎI ===
+            #=== VẼ CÂU HỎI CÓ SỐ THỨ TỰ (Sử dụng hai Surfaces để làm nổi bật số thứ tự) ===
+            
+            # 1. Chuẩn bị nội dung
             question_num = self.current_question.get("question_number", self.game_manager.question_index)
             question_content = self.current_question["question"]
-            full_question_text = f"Câu {question_num}: {question_content}"          
-            question_text = self.font_large.render(full_question_text, True, COLOR_TEXT)
-            question_rect = question_text.get_rect(center=question_rect_center)
-            surface.blit(question_text, question_rect)
+            
+            # 2. Render phần IN ĐẬM: "Câu N: "
+            bold_text = f"Câu {question_num}: "
+            bold_surface = self.font_large.render(bold_text, True, COLOR_TITLE) 
+            
+            # 3. Render phần còn lại: Nội dung câu hỏi
+            content_surface = self.font_large.render(question_content, True, COLOR_TEXT)
+            
+            # 4. Tính toán vị trí để căn giữa và đặt liền kề
+            
+            # Tính tổng chiều rộng
+            total_width = bold_surface.get_width() + content_surface.get_width()
+            
+            # Tính vị trí bắt đầu (để đảm bảo toàn bộ chuỗi được căn giữa)
+            start_x = question_rect_center[0] - total_width // 2
+            start_y = question_rect_center[1]
+            
+            # VẼ PHẦN IN ĐẬM
+            bold_rect = bold_surface.get_rect(midleft=(start_x, start_y))
+            surface.blit(bold_surface, bold_rect.topleft)
+            
+            # VẼ PHẦN NỘI DUNG (bắt đầu ngay sau phần in đậm)
+            content_rect = content_surface.get_rect(midleft=(bold_rect.right, start_y))
+            surface.blit(content_surface, content_rect.topleft)
 
             # 4. VẼ 4 ĐÁP ÁN
             nen_dapan = self.assets['nen_dapan']          
