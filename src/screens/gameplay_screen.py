@@ -417,31 +417,23 @@ class GameplayScreen(BaseScreen):
         sound_icon = self.assets['on'] if self.sound_on else self.assets['off']
         sound_icon_rect = sound_icon.get_rect(midright=(self.settings_rect.right - 40, self.sound_rect.centery))
         surface.blit(sound_icon, sound_icon_rect.topleft)
-        sound_text = self.font_medium.render("Âm thanh FX", True, COLOR_TEXT)
-        surface.blit(sound_text, (self.sound_rect.x + 10, self.sound_rect.centery - sound_text.get_height() // 2))
 
         # BGM
         bgm_icon = self.assets['on'] if self.bgm_on else self.assets['off']
         bgm_icon_rect = bgm_icon.get_rect(midright=(self.settings_rect.right - 40, self.bgm_rect.centery))
         surface.blit(bgm_icon, bgm_icon_rect.topleft)
-        bgm_text = self.font_medium.render("Nhạc nền", True, COLOR_TEXT)
-        surface.blit(bgm_text, (self.bgm_rect.x + 10, self.bgm_rect.centery - bgm_text.get_height() // 2))
 
         # Home (Chọn Level)
-        home_text = self.font_medium.render("Trang chủ", True, COLOR_TEXT)
-        surface.blit(home_text, (self.home_rect.x + 10, self.home_rect.centery - home_text.get_height() // 2))
         if 'nut_back_icon' in self.assets:
             icon_asset = self.assets['nut_back_icon']
-            icon_rect = icon_asset.get_rect(midright=(self.home_rect.right - 40, self.home_rect.centery))
+            icon_rect = icon_asset.get_rect(midright=(self.home_rect.right  , self.home_rect.centery))
             surface.blit(icon_asset, icon_rect.topleft)
 
 
         # Replay (Chơi lại level hiện tại)
-        replay_text = self.font_medium.render("Chơi lại", True, COLOR_TEXT)
-        surface.blit(replay_text, (self.replay_rect.x + 10, self.replay_rect.centery - replay_text.get_height() // 2))
         if 'nut_play_icon' in self.assets:
             icon_asset = self.assets['nut_play_icon']
-            icon_rect = icon_asset.get_rect(midright=(self.replay_rect.right - 40, self.replay_rect.centery))
+            icon_rect = icon_asset.get_rect(midright=(self.replay_rect.right , self.replay_rect.centery))
             surface.blit(icon_asset, icon_rect.topleft)
 
         # Nút đóng pop-up (X)
