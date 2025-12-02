@@ -45,13 +45,3 @@ FONT_SIZE_TITLE = 80
 FONT_SIZE_LARGE = 48
 FONT_SIZE_MEDIUM = 36
 FONT_SIZE_SMALL = 24
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
-ASSETS_DIR = os.path.join(BASE_DIR, '..', 'assets')
-
-# --- THÊM HAI ĐƯỜNG DẪN BỊ LỖI NÀY ---
-ASSETS_MUSIC_DIR = os.path.join(ASSETS_DIR, 'music')  
-ASSETS_SOUND_DIR = os.path.join(ASSETS_DIR, 'sounds') 
-
-# ASSETS_IMG_DIR (Chắc đã tồn tại)
-ASSETS_IMG_DIR = os.path.join(ASSETS_DIR, 'images')

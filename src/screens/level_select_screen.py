@@ -326,5 +326,3 @@ class LevelSelectScreen(BaseScreen):
         #  VẼ POP-UP CÀI ĐẶT nếu show_settings = True
         if self.show_settings:
             self._draw_settings_popup(surface)
-        
-        

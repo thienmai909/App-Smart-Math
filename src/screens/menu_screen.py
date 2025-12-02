@@ -24,14 +24,15 @@ class MenuScreen(BaseScreen):
         except pygame.error:
             self.font_title = pygame.font.SysFont("Arial", FONT_SIZE_TITLE)
             self.font_small = pygame.font.SysFont("Arial", FONT_SIZE_SMALL)
-        
+            
         # KHAI BÁO CÁC RECT TẠM THỜI 
         self.start_button_rect = pygame.Rect(0, 0, 1, 1) 
         # self.setting_button_rect đã bị loại bỏ 
         self.assets = self._load_assets()
         # CĂN CHỈNH VỊ TRÍ NÚT PLAY CUỐI CÙNG
-        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 180)   
+        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 180)    
         # TÍCH HỢP TƯƠNG TÁC SETTINGS TRỰC TIẾP TẠI LEVEL SCREEN
+        # Các rect này không được sử dụng để vẽ/tương tác trong màn hình Menu, nhưng được giữ lại để tránh lỗi thuộc tính nếu logic Settings được tái sử dụng.
         self.show_settings = False
         self.settings_rect = self.assets['nen_caidat'].get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.close_rect = pygame.Rect(self.settings_rect.right - 40, self.settings_rect.y + 10, 30, 30)
@@ -46,7 +47,7 @@ class MenuScreen(BaseScreen):
         assets = {}
         try:
             assets['nen_menu'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'giaodiendautien.png')).convert_alpha()
-            assets['nen_menu'] = pygame.transform.scale(assets['nen_menu'], (SCREEN_WIDTH, SCREEN_HEIGHT))     
+            assets['nen_menu'] = pygame.transform.scale(assets['nen_menu'], (SCREEN_WIDTH, SCREEN_HEIGHT))      
             assets['nutbatdau'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nutbatdau.png')).convert_alpha()
             assets['nutbatdau'] = pygame.transform.scale(assets['nutbatdau'], (250, 60)) 
             self.start_button_rect.size = assets['nutbatdau'].get_size() 
@@ -55,6 +56,15 @@ class MenuScreen(BaseScreen):
             assets['nen_caidat'] = pygame.Surface((400, 450)); assets['nen_caidat'].fill((200, 150, 150))
             assets['on'] = pygame.Surface((50, 30)); assets['on'].fill(COLOR_CORRECT)
             assets['off'] = pygame.Surface((50, 30)); assets['off'].fill(COLOR_WRONG)
+
+            # --- TẢI ÂM THANH MỚI THÊM VÀO ---
+            assets['sound'] = {}
+            assets['sound']['bgm'] = os.path.join(ASSETS_SOUND_DIR, 'nhacnen.mp3') 
+            try:
+                assets['sound']['click'] = pygame.mixer.Sound(os.path.join(ASSETS_SOUND_DIR, 'click_dapan.wav')) 
+            except pygame.error as e:
+                print(f"Lỗi tải âm thanh hiệu ứng: {e}. Âm thanh sẽ không được phát.")
+                assets['sound']['click'] = None
             
         except pygame.error as e:
             print(f"Lỗi tải hình ảnh Menu: {e}. Vui lòng kiểm tra file ảnh.")
@@ -65,13 +75,31 @@ class MenuScreen(BaseScreen):
             assets['on'] = pygame.Surface((50, 30)); assets['on'].fill(COLOR_CORRECT)
             assets['off'] = pygame.Surface((50, 30)); assets['off'].fill(COLOR_WRONG)
             
+            # FALLBACK CHO SOUND
+            assets['sound'] = {'bgm': None, 'click': None}
+            
         return assets
+
+    def on_enter(self):
+        """Khởi động nhạc nền khi màn hình menu được kích hoạt."""
+        if self.bgm_on and 'bgm' in self.assets['sound'] and self.assets['sound']['bgm']:
+            try:
+                pygame.mixer.music.load(self.assets['sound']['bgm'])
+                pygame.mixer.music.play(-1) # Phát lặp lại
+            except pygame.error as e:
+                print(f"Lỗi phát nhạc nền: {e}")
 
     def handle_input(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
 
             if self.start_button_rect.collidepoint(mouse_pos):
+                # Phát âm thanh click
+                if self.assets['sound']['click'] and self.sound_on:
+                    self.assets['sound']['click'].play()
+                
+                # Dừng nhạc nền khi chuyển màn hình
+                pygame.mixer.music.stop() 
                 self.game_manager.switch_screen("LEVEL") 
 
     def update(self):
@@ -86,4 +114,3 @@ class MenuScreen(BaseScreen):
             return
         surface.blit(self.assets['nen_menu'], (0, 0))
         surface.blit(self.assets['nutbatdau'], self.start_button_rect.topleft)
-        
