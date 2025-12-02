@@ -123,3 +123,6 @@ class GameManager:
                     
             except Exception as e:
                 print(f"Lỗi khi lưu điểm: {e}")
+
+# Khởi tạo Pygame Mixer
+pygame.mixer.init()

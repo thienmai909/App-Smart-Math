@@ -30,7 +30,7 @@ class MenuScreen(BaseScreen):
         # self.setting_button_rect đã bị loại bỏ 
         self.assets = self._load_assets()
         # CĂN CHỈNH VỊ TRÍ NÚT PLAY CUỐI CÙNG
-        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 185)   
+        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 215)   
         # TÍCH HỢP TƯƠNG TÁC SETTINGS TRỰC TIẾP TẠI LEVEL SCREEN
         self.show_settings = False
         self.settings_rect = self.assets['nen_caidat'].get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))

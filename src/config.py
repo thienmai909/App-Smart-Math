@@ -2,10 +2,10 @@
 import os
 
 # --- THÔNG SỐ MÀN HÌNH ---
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-FPS = 60
-TITLE = "QUIZ GAME MASTER"
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 720
+FPS = 120
+TITLE = "Toán thông minh"
 
 # --- ĐƯỜNG DẪN TÀI NGUYÊN (Khắc phục lỗi NameError) ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
