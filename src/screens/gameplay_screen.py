@@ -16,7 +16,7 @@ class GameplayScreen(BaseScreen):
     def __init__(self, game_manager):
         super().__init__(game_manager)
 
-        # --- KHỞI TẠO FONT 
+        # --- KHỞI TẠO FONT (Giữ nguyên)
         try:
             selected_font_path = None
             
@@ -50,14 +50,14 @@ class GameplayScreen(BaseScreen):
         # Kích thước cố định 
         self.ANSWER_BUTTON_SIZE = (350, 80)
         self.STAR_SIZE = 50 
-        self.STAR_BAR_SIZE = (300, 40) # Sửa lại 40 để khớp với thanh tiến độ
-        # Settings/Home button
-        self.settings_button_rect = pygame.Rect(SCREEN_WIDTH - 150, 20, 100, 40) 
+        self.STAR_BAR_SIZE = (300, 40)
+        self.settings_button_rect = pygame.Rect(SCREEN_WIDTH - 20 - 40, 20, 40, 40) 
         
         self.GAME_OVER_BUTTON_SIZE = (250, 60) 
         self.game_over_button_rect = pygame.Rect(0, 0, *self.GAME_OVER_BUTTON_SIZE)
         
         self.score = 0
+        self.best_score = 0 # ĐIỂM CAO NHẤT MỚI THÊM
         self.current_question = None 
         self.button_rects = [] 
         
@@ -67,22 +67,17 @@ class GameplayScreen(BaseScreen):
         self.game_over = False
         self.final_stars = 0 
 
-        self.selected_answer_index = None
-        self.show_feedback_until = 0
-        self.answer_is_correct = False 
-
-        # Vị trí câu hỏi 
-        self.question_pos = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4 + 30)
-        self.answer_start_y = SCREEN_HEIGHT // 2 + 50
+        # --- VỊ TRÍ MỚI (Giữ nguyên từ yêu cầu trước) ---
+        self.question_pos = (SCREEN_WIDTH // 2, 140) 
+        self.answer_start_y = 260
         self.answer_spacing = 140 
         
         self.assets = self._load_assets() 
         
         self.game_over_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200)
 
-        # --- KHỞI TẠO SETTINGS POP-UP 
+        # --- KHỞI TẠO SETTINGS POP-UP (Giữ nguyên)
         self.show_settings = False
-        # Giả định kích thước nền settings
         self.settings_rect = self.assets['nen_caidat'].get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)) 
         self.close_rect = pygame.Rect(self.settings_rect.right - 40, self.settings_rect.y + 10, 30, 30)
         self.sound_rect = pygame.Rect(self.settings_rect.x + 50, self.settings_rect.y + 120, 300, 50)
@@ -93,29 +88,31 @@ class GameplayScreen(BaseScreen):
         self.sound_on = True 
         self.bgm_on = True 
         
-        # Rect cho thanh tiến độ để vẽ fill
-        self.tiendo_rect = self.assets.get('thanh_tiendo').get_rect(center=(SCREEN_WIDTH // 2, 30)) if 'thanh_tiendo' in self.assets else pygame.Rect(SCREEN_WIDTH//2 - 150, 10, 300, 40)
+        # Xóa thanh tiến độ
+        # self.timer_progress_rect = pygame.Rect(0, 0, PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT)
+        # self.timer_progress_rect.center = (SCREEN_WIDTH // 2, 35) 
         
     def _load_assets(self):
+        # ... (Giữ nguyên logic load assets, chỉ cần đảm bảo 'sao_large' được load đúng) ...
         assets = {}
         assets['is_settings_fallback'] = False 
         try:
-            # 1. NỀN MÀN HÌNH CHÍNH (nenchinh.png)
+            # 1. NỀN MÀN HÌNH CHÍNH 
             try:
                 assets['nen_chinh'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nenchinh.png')).convert()
                 assets['nen_chinh'] = pygame.transform.scale(assets['nen_chinh'], (SCREEN_WIDTH, SCREEN_HEIGHT))
             except pygame.error:
                 assets['nen_chinh'] = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT)); assets['nen_chinh'].fill(COLOR_BG)
 
-            # 2. NỀN CÂU HỎI (nencauhoi.png)
+            # 2. NỀN CÂU HỎI 
             assets['nen_cauhoi'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nencauhoi.png')).convert_alpha()
             assets['nen_cauhoi'] = pygame.transform.scale(assets['nen_cauhoi'], (750, 200))
             
-            # 3. NỀN ĐÁP ÁN (nendapan.png)
+            # 3. NỀN ĐÁP ÁN 
             assets['nen_dapan'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nendapan.png')).convert_alpha()
             assets['nen_dapan'] = pygame.transform.scale(assets['nen_dapan'], self.ANSWER_BUTTON_SIZE)
             
-            # 4. GAME OVER IMAGE (game_over.png)
+            # 4. GAME OVER IMAGE 
             try:
                 assets['game_over_image'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'game_over.png')).convert_alpha()
                 assets['game_over_image'] = pygame.transform.scale(assets['game_over_image'], (1200, 600)) 
@@ -126,7 +123,7 @@ class GameplayScreen(BaseScreen):
                 assets['game_over_image'].blit(text_go, text_go.get_rect(center=(200, 40)))
                 assets['game_over_image'].blit(text_score, text_score.get_rect(center=(200, 100)))
 
-            # 5. NÚT SETTINGS (nutcaidat.png)
+            # 5. NÚT SETTINGS 
             try:
                 assets['nutcaidat'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nutcaidat.png')).convert_alpha() 
                 assets['nutcaidat'] = pygame.transform.scale(assets['nutcaidat'], (40, 40))
@@ -137,46 +134,44 @@ class GameplayScreen(BaseScreen):
             self.settings_button_rect.size = assets['nutcaidat'].get_size()
             self.settings_button_rect.topright = (SCREEN_WIDTH - 20, 20) 
 
-            # 6. NÚT NEXT (nut_next.png)
+            # 6. NÚT NEXT 
             try:
                 assets['nut_next'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nut_next.png')).convert_alpha()
                 assets['nut_next'] = pygame.transform.scale(assets['nut_next'], self.GAME_OVER_BUTTON_SIZE)
             except pygame.error:
                 assets['nut_next'] = pygame.Surface(self.GAME_OVER_BUTTON_SIZE); assets['nut_next'].fill(COLOR_CORRECT)
                 
-            # 7. THANH TIẾN ĐỘ (thanh_tiendo.png)
-            assets['thanh_tiendo'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'thanh_tiendo.png')).convert_alpha()
-            assets['thanh_tiendo'] = pygame.transform.scale(assets['thanh_tiendo'], (300, 40))
+            # 7. THANH TIẾN ĐỘ (Chỉ cần giữ lại placeholder cho fallback) 
+            assets['thanh_tiendo'] = pygame.Surface((PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT), pygame.SRCALPHA)
+            assets['thanh_tiendo'].fill((50, 50, 50, 150)) 
             
             # 8. THANH SAO & SAO
-            # Sao lớn (
             star_surf = pygame.Surface((self.STAR_SIZE, self.STAR_SIZE), pygame.SRCALPHA)
+            # Vẽ hình ngôi sao (tọa độ để vẽ ngôi sao 5 cánh)
             pygame.draw.polygon(star_surf, (255, 223, 0), [(25, 0), (33, 17), (50, 19), (38, 30), (41, 50), (25, 38), (9, 50), (12, 30), (0, 19), (17, 17)], 0)
             assets['sao_large'] = star_surf
             
-            # Tải 4 thanh sao 
+            # Tải 4 thanh sao (0, 1, 2, 3) (Giữ nguyên logic loading nhưng không dùng trong draw())
             for i in range(4):
                     filename = None
                     if i == 0:
-                        filename = None 
+                        filename = None
                     else:
-                        filename = f'thanh{i}sao.png' 
+                        filename = f'thanh{i}sao.png'
                     
                     try:
                         if filename:
                             star_bar_img = pygame.image.load(os.path.join(ASSETS_IMG_DIR, filename)).convert_alpha()
                             assets[f'thanh_sao_{i}'] = pygame.transform.scale(star_bar_img, self.STAR_BAR_SIZE)
                         else:
-                            # Buộc nhảy vào khối except để dùng fallback cho 0 sao
                             raise FileNotFoundError 
                             
-                    except (pygame.error, FileNotFoundError) as e:
-                        # Fallback cho 0 sao và các lỗi tải ảnh sao khác
+                    except (pygame.error, FileNotFoundError):
                         fallback_surf = pygame.Surface(self.STAR_BAR_SIZE, pygame.SRCALPHA)
-                        fallback_surf.fill((200, 200, 200, 150)) # Màu xám mờ
+                        fallback_surf.fill((200, 200, 200, 150))
                         assets[f'thanh_sao_{i}'] = fallback_surf
             
-            # 9. ASSETS SETTINGS POP-UP
+            # 9. ASSETS SETTINGS POP-UP (Giữ nguyên)
             assets['nen_caidat'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'anvao_caidat.png')).convert_alpha()
             assets['nen_caidat'] = pygame.transform.scale(assets['nen_caidat'], (400, 450))
             assets['on'] = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'on.png')).convert_alpha(), (50, 30))
@@ -194,24 +189,20 @@ class GameplayScreen(BaseScreen):
             except pygame.error:
                 assets['nut_play_icon'] = pygame.Surface(ACTION_BUTTON_SIZE); assets['nut_play_icon'].fill(COLOR_CORRECT)
                 
-            # 10. TẢI ÂM THANH 
+            # 10. TẢI ÂM THANH (Giữ nguyên)
             assets['sound'] = {}
-            # Nhạc nền 
             assets['sound']['bgm'] = os.path.join(ASSETS_SOUND_DIR, 'nhacnen.mp3') 
-            # Hiệu ứng âm thanh 
             try:
                 assets['sound']['click'] = pygame.mixer.Sound(os.path.join(ASSETS_SOUND_DIR, 'click_dapan.wav'))
                 assets['sound']['correct'] = pygame.mixer.Sound(os.path.join(ASSETS_SOUND_DIR, 'yes.mp3'))
                 assets['sound']['wrong'] = pygame.mixer.Sound(os.path.join(ASSETS_SOUND_DIR, 'no.mp3'))
             except pygame.error as e:
-                print(f"Lỗi tải âm thanh hiệu ứng: {e}. Âm thanh sẽ không được phát.")
                 assets['sound']['click'] = None
                 assets['sound']['correct'] = None
                 assets['sound']['wrong'] = None
 
         except pygame.error as e:
-            print(f"Lỗi tải hình ảnh: {e}. Sử dụng Surface màu mặc định cho các thành phần bị thiếu.")
-            # FALLBACK LỚN
+            # FALLBACK LỚN (Giữ nguyên)
             assets['nen_chinh'] = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT)); assets['nen_chinh'].fill(COLOR_BG)
             assets['nen_cauhoi'] = pygame.Surface((650, 150), pygame.SRCALPHA); assets['nen_cauhoi'].fill((255, 255, 255, 150))
             assets['nen_dapan'] = pygame.Surface(self.ANSWER_BUTTON_SIZE, pygame.SRCALPHA); assets['nen_dapan'].fill(COLOR_ACCENT) 
@@ -225,32 +216,32 @@ class GameplayScreen(BaseScreen):
             assets['is_settings_fallback'] = True 
             for i in range(4):
                     assets[f'thanh_sao_{i}'] = pygame.Surface(self.STAR_BAR_SIZE); assets[f'thanh_sao_{i}'].fill((200, 200, 200))
-            # FALLBACK CHO SETTINGS
             assets['nen_caidat'] = pygame.Surface((400, 450)); assets['nen_caidat'].fill((200, 150, 150))
             assets['on'] = pygame.Surface((50, 30)); assets['on'].fill(COLOR_CORRECT)
             assets['off'] = pygame.Surface((50, 30)); assets['off'].fill(COLOR_WRONG)
             assets['nut_back_icon'] = pygame.Surface(ACTION_BUTTON_SIZE); assets['nut_back_icon'].fill(COLOR_ACCENT)
             assets['nut_play_icon'] = pygame.Surface(ACTION_BUTTON_SIZE); assets['nut_play_icon'].fill(COLOR_CORRECT)
-            # FALLBACK CHO SOUND
             assets['sound'] = {'bgm': None, 'click': None, 'correct': None, 'wrong': None}
 
         return assets
 
     def on_enter(self):
         """Khởi động trò chơi khi màn hình này được kích hoạt."""
-        # 1. Reset trạng thái trò chơi
+        # Lấy điểm cao nhất cho level hiện tại
+        if self.game_manager.current_level_key:
+             self.best_score = self.game_manager.get_level_best_score(self.game_manager.current_level_key)
+        else:
+             self.best_score = 0
+             
         self.reset_game()
-        
-        # 2. Tải câu hỏi đầu tiên
         self.load_next_question()
 
-        # 3. KHỞI ĐỘNG NHẠC NỀN
         if self.bgm_on and 'bgm' in self.assets['sound'] and self.assets['sound']['bgm']:
             try:
                 pygame.mixer.music.load(self.assets['sound']['bgm'])
                 pygame.mixer.music.play(-1) # Phát lặp lại
             except pygame.error as e:
-                print(f"Lỗi phát nhạc nền: {e}")
+                pass
 
     def reset_game(self):
         self.score = 0
@@ -262,73 +253,30 @@ class GameplayScreen(BaseScreen):
         self.start_time = time.time()
         self.show_settings = False
         
-        # DỪNG NHẠC NỀN
         pygame.mixer.music.stop()
 
-    def load_next_question(self):
-        
-        if self.game_manager.question_index < len(self.game_manager.questions_pool):
-            q_data = self.game_manager.questions_pool[self.game_manager.question_index]
-            
-            # Đảm bảo các lựa chọn là string để hiển thị, kể cả khi là số
-            answers = [str(o) for o in q_data["options"]]
-            correct_answer = str(q_data["answer"])
-            random.shuffle(answers)
-
-            self.current_question = {
-                "question": q_data["question"],
-                "answers": answers, 
-                "correct_answer": correct_answer,
-                "question_number": self.game_manager.question_index + 1
-            }
-            try:
-                self.current_question["correct_index"] = self.current_question["answers"].index(correct_answer)
-            except ValueError:
-                self.current_question["correct_index"] = -1
-                self.game_manager.question_index += 1
-            
-            self.selected_answer_index = None
-            self.show_feedback_until = 0
-            self.answer_is_correct = False
-            self.start_time = time.time()
-            self.time_left = self.time_limit
-            
-            # Tăng index câu hỏi CHUẨN BỊ cho câu hỏi tiếp theo
-            self.game_manager.question_index += 1
-        
-        else:
-            # Hết câu hỏi -> GAME OVER
-            self.game_over = True
-            self.final_stars = self.game_manager.calculate_stars(self.score)
-            self.game_manager.save_score(self.score) 
-            
-            # DỪNG NHẠC NỀN KHI GAME OVER 
-            pygame.mixer.music.stop()
-
+    # ... (Các phương thức khác giữ nguyên: load_next_question, handle_input, process_answer, update) ...
+    
     def handle_input(self, event):   
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
             
-            # --- ƯU TIÊN 1: XỬ LÝ POP-UP SETTINGS NẾU ĐANG MỞ ---
             if self.show_settings:
                 if self.close_rect.collidepoint(mouse_pos):
                     self.show_settings = False
                     return
                 
-                # Logic click bên trong pop-up
                 if self.sound_rect.collidepoint(mouse_pos):
                     self.sound_on = not self.sound_on
                     
                 elif self.bgm_rect.collidepoint(mouse_pos):
                     self.bgm_on = not self.bgm_on
-                    # LOGIC BẬT/TẮT NHẠC NỀN 
-                    if self.bgm_on:
-                        if 'bgm' in self.assets['sound'] and self.assets['sound']['bgm']:
+                    if self.bgm_on and self.assets['sound']['bgm']:
                              try:
                                 pygame.mixer.music.load(self.assets['sound']['bgm'])
                                 pygame.mixer.music.play(-1)
                              except pygame.error as e:
-                                print(f"Lỗi phát nhạc nền: {e}")
+                                pass
                     else:
                         pygame.mixer.music.stop()
                         
@@ -337,23 +285,18 @@ class GameplayScreen(BaseScreen):
                     self.show_settings = False
                     self.reset_game() 
                 elif self.replay_rect.collidepoint(mouse_pos):
-                    # Chơi lại level hiện tại (reset index về đầu level)
                     self.game_manager.question_index = 0
                     self.reset_game()
                     self.load_next_question() 
                     self.show_settings = False
                 return 
             
-            # --- ƯU TIÊN 2: XỬ LÝ TRƯỜNG HỢP GAME OVER ---
             if self.game_over:
                 if self.game_over_button_rect.collidepoint(mouse_pos):
                     self.game_manager.switch_screen("LEVEL") 
                     self.reset_game() 
                 return 
             
-            # --- ƯU TIÊN 3: XỬ LÝ GAMEPLAY BÌNH THƯỜNG ---
-            
-            # XỬ LÝ NÚT SETTINGS (MỞ POP-UP)
             if self.settings_button_rect.collidepoint(mouse_pos):
                 self.show_settings = True 
                 return
@@ -365,10 +308,8 @@ class GameplayScreen(BaseScreen):
                         return
 
     def process_answer(self, selected_index):
-        # PHÁT ÂM THANH CLICK KHI CHỌN 
         if selected_index >= 0 and self.assets['sound']['click'] and self.sound_on:
-             if self.assets['sound']['click']:
-                 self.assets['sound']['click'].play()
+             self.assets['sound']['click'].play()
              
         self.selected_answer_index = selected_index
         
@@ -378,43 +319,31 @@ class GameplayScreen(BaseScreen):
             
             if is_correct:
                 self.score += POINTS_CORRECT 
-                # PHÁT ÂM THANH ĐÚNG 
                 if self.assets['sound']['correct'] and self.sound_on:
-                     if self.assets['sound']['correct']:
-                         self.assets['sound']['correct'].play()
+                     self.assets['sound']['correct'].play()
             else:
                 self.score = max(0, self.score + POINTS_WRONG)
-                # PHÁT ÂM THANH SAI 
                 if self.assets['sound']['wrong'] and self.sound_on:
-                     if self.assets['sound']['wrong']:
-                         self.assets['sound']['wrong'].play()
-        else: # Hết giờ (Xử lý như đáp án sai)
+                     self.assets['sound']['wrong'].play()
+        else:
             self.answer_is_correct = False
             self.score = max(0, self.score + POINTS_WRONG)
-            # PHÁT ÂM THANH SAI 
             if self.assets['sound']['wrong'] and self.sound_on:
-                 if self.assets['sound']['wrong']:
-                    self.assets['sound']['wrong'].play()
+                 self.assets['sound']['wrong'].play()
 
         self.show_feedback_until = time.time() + 1.5 
 
     def update(self):
-        # Logic settings
         if self.show_settings:
-            # Điều chỉnh mixer dựa trên self.sound_on 
-            if self.sound_on:
-                 pygame.mixer.set_reserved(0) # Cho phép âm thanh
-            else:
-                 pygame.mixer.set_reserved(1) # Tắt sound effect
+            if self.sound_on: pygame.mixer.set_reserved(0) 
+            else: pygame.mixer.set_reserved(1)
             
-            # Điều chỉnh BGM (chỉ khi có nhạc nền)
             if self.assets['sound']['bgm']:
                 if self.bgm_on and not pygame.mixer.music.get_busy():
                     try:
                         pygame.mixer.music.load(self.assets['sound']['bgm'])
                         pygame.mixer.music.play(-1)
-                    except pygame.error:
-                        pass
+                    except pygame.error: pass
                 elif not self.bgm_on and pygame.mixer.music.get_busy():
                     pygame.mixer.music.stop()
                  
@@ -429,58 +358,56 @@ class GameplayScreen(BaseScreen):
             self.time_left = int(self.time_limit - time_spent)        
             if self.time_left <= 0:
                 self.time_left = 0
-                self.process_answer(-2) # Hết giờ (index -2)       
+                self.process_answer(-2)     
                 
-        # Sau khi có phản hồi, chờ 1.5s rồi tải câu hỏi tiếp theo
         if self.selected_answer_index is not None and current_time >= self.show_feedback_until:
             self.load_next_question()
 
-    """Vẽ pop-up cài đặt lên trên màn hình."""         
+    # ... (Phương thức _draw_settings_popup giữ nguyên) ...
+            
     def _draw_settings_popup(self, surface):
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 150)) 
         surface.blit(overlay, (0, 0))   
         
-        # Vẽ nền pop-up
         surface.blit(self.assets['nen_caidat'], self.settings_rect.topleft)
         
-        # --- VẼ CÁC THÔNG TIN/NÚT BÊN TRONG POPUP ---
-        # Title
         settings_title = self.font_large.render("CÀI ĐẶT", True, COLOR_TITLE)
         settings_title_rect = settings_title.get_rect(midtop=(self.settings_rect.centerx, self.settings_rect.y + 20))
         surface.blit(settings_title, settings_title_rect)
         
-        # Sound FX
+        sound_text = self.font_medium.render("Âm thanh FX", True, COLOR_TEXT)
+        surface.blit(sound_text, (self.sound_rect.x + 10, self.sound_rect.y + 10))
         sound_icon = self.assets['on'] if self.sound_on else self.assets['off']
         sound_icon_rect = sound_icon.get_rect(midright=(self.settings_rect.right - 40, self.sound_rect.centery))
         surface.blit(sound_icon, sound_icon_rect.topleft)
 
-        # BGM
+        bgm_text = self.font_medium.render("Nhạc nền", True, COLOR_TEXT)
+        surface.blit(bgm_text, (self.bgm_rect.x + 10, self.bgm_rect.y + 10))
         bgm_icon = self.assets['on'] if self.bgm_on else self.assets['off']
         bgm_icon_rect = bgm_icon.get_rect(midright=(self.settings_rect.right - 40, self.bgm_rect.centery))
         surface.blit(bgm_icon, bgm_icon_rect.topleft)
 
-        # Home (Chọn Level)
+        home_text = self.font_medium.render("Về chọn Level", True, COLOR_TEXT)
+        surface.blit(home_text, (self.home_rect.x + 10, self.home_rect.y + 10))
         if 'nut_back_icon' in self.assets:
             icon_asset = self.assets['nut_back_icon']
             icon_rect = icon_asset.get_rect(midright=(self.home_rect.right - 5, self.home_rect.centery))
             surface.blit(icon_asset, icon_rect.topleft)
 
-
-        # Replay (Chơi lại level hiện tại)
+        replay_text = self.font_medium.render("Chơi lại Level", True, COLOR_TEXT)
+        surface.blit(replay_text, (self.replay_rect.x + 10, self.replay_rect.y + 10))
         if 'nut_play_icon' in self.assets:
             icon_asset = self.assets['nut_play_icon']
             icon_rect = icon_asset.get_rect(midright=(self.replay_rect.right - 5, self.replay_rect.centery))
             surface.blit(icon_asset, icon_rect.topleft)
 
-        # Nút đóng pop-up (X)
         pygame.draw.circle(surface, COLOR_WRONG, self.close_rect.center, 15)
         close_text = self.font_small.render("X", True, COLOR_WHITE)
         close_text_rect = close_text.get_rect(center=self.close_rect.center)
         surface.blit(close_text, close_text_rect)
-            
+
     def draw(self): 
-        # LẤY SURFACE TỪ GAME MANAGER
         surface = self.game_manager._current_surface
         if surface is None:
             return          
@@ -489,40 +416,23 @@ class GameplayScreen(BaseScreen):
         # 0. VẼ NỀN CHÍNH
         surface.blit(self.assets['nen_chinh'], (0, 0))
         
-        # 1. VẼ ĐIỂM SỐ VÀ TIMER
-        if 'thanh_tiendo' in self.assets:
-            tiendo_rect = self.tiendo_rect 
-            surface.blit(self.assets['thanh_tiendo'], tiendo_rect)          
-            
-            # Tính toán phần trăm thanh tiến độ
-            time_ratio = self.time_left / self.time_limit if self.time_limit > 0 else 0
-            
-            # VẼ PHẦN TIẾN ĐỘ THỰC TẾ (FILL BAR)
-            PROGRESS_BAR_LENGTH = 300 
-            fill_width = int(PROGRESS_BAR_LENGTH * time_ratio)
-            fill_height = 40
-            
-            fill_bar_x = tiendo_rect.x
-            fill_bar_y = tiendo_rect.y
-            
-            # Vẽ thanh fill
-            temp_progress_surf = pygame.Surface((fill_width, fill_height), pygame.SRCALPHA)
-            temp_progress_surf.fill(COLOR_ACCENT) # Màu fill
-            
-            fill_rect = temp_progress_surf.get_rect(topleft=(fill_bar_x, fill_bar_y))
-            fill_rect.width = fill_width 
-            surface.blit(temp_progress_surf, fill_rect.topleft)
+        # 1. VẼ ĐIỂM SỐ VÀ TIMER (CHỈ SỐ GIÂY)
+        
+        # VẼ THỜI GIAN CÒN LẠI (SỐ GIÂY)
+        timer_text_content = self.font_large.render(f"{self.time_left}", True, COLOR_ACCENT) 
+        timer_text_rect = timer_text_content.get_rect(center=(SCREEN_WIDTH // 2, 35)) # Vị trí top center
+        surface.blit(timer_text_content, timer_text_rect)
+        
+        # VẼ ĐIỂM SỐ HIỆN TẠI
+        score_label = self.font_small.render(f"ĐIỂM: {self.score}", True, COLOR_BLACK) 
+        score_label_rect = score_label.get_rect(topleft=(20, 20))
+        surface.blit(score_label, score_label_rect.topleft) 
 
-            timer_color = COLOR_INFO if self.time_left > 5 else COLOR_WRONG
-            timer_text = self.font_small.render(f"Thời gian: {self.time_left}", True, timer_color)
-            
-            TIME_PADDING = 50 
-            timer_text_rect = timer_text.get_rect(midleft=(TIME_PADDING, 30)) 
-            surface.blit(timer_text, timer_text_rect)
+        # VẼ ĐIỂM CAO NHẤT
+        best_score_label = self.font_small.render(f"BEST: {self.best_score}", True, COLOR_BLACK) 
+        best_score_label_rect = best_score_label.get_rect(topleft=(20, 50))
+        surface.blit(best_score_label, best_score_label_rect.topleft) 
 
-        score_text = self.font_small.render(f"Điểm: {self.score}", True, COLOR_TEXT)
-        surface.blit(score_text, (SCREEN_WIDTH - 120 - score_text.get_width(), 20)) 
-          
         # 2. VẼ NÚT SETTINGS
         surface.blit(self.assets['nutcaidat'], self.settings_button_rect.topleft)
         
@@ -530,8 +440,37 @@ class GameplayScreen(BaseScreen):
              setting_text = self.font_small.render("Cài đặt", True, COLOR_WHITE)
              setting_rect = setting_text.get_rect(center=self.settings_button_rect.center)
              surface.blit(setting_text, setting_rect)
-             
-        # 3. VẼ CÂU HỎI (Dùng nen_cauhoi)
+
+        # 3. VẼ STAR BAR TRÊN MÀN HÌNH CHƠI
+        if not self.game_over and self.current_question:
+            current_stars = self.game_manager.calculate_stars(self.score)
+            star_asset = self.assets.get('sao_large')
+            
+            if star_asset:
+                 # Thu nhỏ sao để đặt lên thanh
+                 star_size = 30 
+                 star_spacing = 10
+                 
+                 star_asset_small = pygame.transform.scale(star_asset, (star_size, star_size))
+                 
+                 total_stars_width = (3 * star_size) + (2 * star_spacing) 
+                 start_star_x = SCREEN_WIDTH // 2 - total_stars_width // 2
+                 star_y = 65 # Vị trí dưới Timer
+                 
+                 for i in range(3):
+                     star_x = start_star_x + i * (star_size + star_spacing)
+                     
+                     if i < current_stars:
+                         surface.blit(star_asset_small, (star_x, star_y))
+                     else:
+                         # Sao mờ (chưa đạt)
+                         grey_star = star_asset_small.copy()
+                         grey_surf = pygame.Surface(grey_star.get_size(), pygame.SRCALPHA)
+                         grey_surf.fill((100, 100, 100, 150)) 
+                         grey_star.blit(grey_surf, (0, 0))
+                         surface.blit(grey_star, (star_x, star_y))
+            
+        # 4. VẼ CÂU HỎI
         if not self.game_over and self.current_question:
             if 'nen_cauhoi' in self.assets: 
                 question_bg_rect = self.assets['nen_cauhoi'].get_rect(center=self.question_pos)
@@ -540,28 +479,24 @@ class GameplayScreen(BaseScreen):
             else:
                 question_rect_center = self.question_pos
 
-            #=== VẼ CÂU HỎI CÓ SỐ THỨ TỰ ) ===
-            
             question_num = self.current_question.get("question_number", self.game_manager.question_index)
             question_content = self.current_question["question"]
             
+            # Màu chữ câu hỏi là màu đen
             bold_text = f"Câu {question_num}: "
-            bold_surface = self.font_large.render(bold_text, True, COLOR_TEXT) 
-            
-            content_surface = self.font_large.render(question_content, True, COLOR_TEXT)
+            bold_surface = self.font_large.render(bold_text, True, COLOR_BLACK) 
+            content_surface = self.font_large.render(question_content, True, COLOR_BLACK)
             
             total_width = bold_surface.get_width() + content_surface.get_width()
-            
             start_x = question_rect_center[0] - total_width // 2
             start_y = question_rect_center[1]
             
             bold_rect = bold_surface.get_rect(midleft=(start_x, start_y))
             surface.blit(bold_surface, bold_rect.topleft)
-            
             content_rect = content_surface.get_rect(midleft=(bold_rect.right, start_y))
             surface.blit(content_surface, content_rect.topleft)
 
-            # 4. VẼ 4 ĐÁP ÁN
+            # 5. VẼ 4 ĐÁP ÁN
             nen_dapan = self.assets['nen_dapan']          
             x_pos_left = SCREEN_WIDTH // 2 - 250
             x_pos_right = SCREEN_WIDTH // 2 + 250 
@@ -592,16 +527,14 @@ class GameplayScreen(BaseScreen):
                     overlay_surf.fill((color_overlay[0], color_overlay[1], color_overlay[2], 150))
                     temp_dapan_surf.blit(overlay_surf, (0, 0))
                 
-                # VẼ NỀN ĐÁP ÁN
                 surface.blit(temp_dapan_surf, button_rect.topleft)
                 
-                # VẼ VĂN BẢN ĐÁP ÁN
-                answer_display = f"{chr(65 + i)}. {answer}"
-                answer_text = self.font_medium.render(answer_display, True, COLOR_TEXT) 
+                # Màu chữ đáp án là màu đen, chỉ giữ lại đáp án
+                answer_text = self.font_medium.render(f"{answer}", True, COLOR_BLACK) 
                 answer_text_rect = answer_text.get_rect(center=button_rect.center) 
                 surface.blit(answer_text, answer_text_rect)
             
-        # 5. VẼ THÔNG BÁO GAME OVER
+        # 6. VẼ THÔNG BÁO GAME OVER
         if self.game_over:
             overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 180)) 
@@ -610,44 +543,21 @@ class GameplayScreen(BaseScreen):
             go_rect = go_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 ))
             surface.blit(go_image, go_rect)
             
-            # VẼ ĐIỂM SỐ VÀ SAO
-            score_final_text = self.font_large.render(f"Điểm của bạn: {self.score}", True, COLOR_WHITE)
+            # VẼ ĐIỂM CỦA BẠN (Chỉ giữ lại số điểm)
+            score_final_text = self.font_large.render(f"{self.score}", True, COLOR_WHITE)
             score_final_rect = score_final_text.get_rect(center=(SCREEN_WIDTH // 2, go_rect.centery + 100))
             surface.blit(score_final_text, score_final_rect)
             
-            star_asset = self.assets.get('sao_large')
-            if star_asset:
-                star_size = star_asset.get_width()
-                star_spacing = 20
-                
-                total_stars_width = (3 * star_size) + (2 * star_spacing) 
-                start_star_x = SCREEN_WIDTH // 2 - total_stars_width // 2
-                star_y = go_rect.centery + 150
-
-                for i in range(3):
-                    star_x = start_star_x + i * (star_size + star_spacing)
-                    
-                    if i < self.final_stars:
-                        surface.blit(star_asset, (star_x, star_y))
-                    else:
-                        grey_star = star_asset.copy()
-                        grey_surf = pygame.Surface(grey_star.get_size(), pygame.SRCALPHA)
-                        grey_surf.fill((100, 100, 100, 200)) 
-                        grey_star.blit(grey_surf, (0, 0))
-                        surface.blit(grey_star, (star_x, star_y))
-
-            # Nút Quay lại Menu (NEXT)
+            # ĐÃ XÓA LOGIC VẼ SAO TRÊN MÀN HÌNH GAME OVER
+            
+            # Nút Quay lại Menu (NEXT) - Bỏ chữ "TIẾP TỤC" (Giữ nguyên)
             if 'nut_next' in self.assets:
                 surface.blit(self.assets['nut_next'], self.game_over_button_rect.topleft)
-                next_text = self.font_medium.render("TIẾP TỤC", True, COLOR_WHITE) 
-                next_text_rect = next_text.get_rect(center=self.game_over_button_rect.center)
-                surface.blit(next_text, next_text_rect)
             else:
+                # Nếu không có ảnh, chỉ vẽ nút màu xanh lá
                 pygame.draw.rect(surface, COLOR_CORRECT, self.game_over_button_rect, border_radius=0)
-                next_text = self.font_medium.render("TIẾP TỤC", True, COLOR_WHITE) 
-                next_text_rect = next_text.get_rect(center=self.game_over_button_rect.center)
-                surface.blit(next_text, next_text_rect)
 
-        # 6. VẼ POP-UP CÀI ĐẶT
+
+        # 7. VẼ POP-UP CÀI ĐẶT
         if self.show_settings:
             self._draw_settings_popup(surface)

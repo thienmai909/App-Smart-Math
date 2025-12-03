@@ -14,5 +14,13 @@
         1,
         2,
         3
-    ]
+    ],
+    "scores": {
+        "LEVEL_2": {
+            "high_score": 170
+        },
+        "LEVEL_1": {
+            "high_score": 180
+        }
+    }
 }
