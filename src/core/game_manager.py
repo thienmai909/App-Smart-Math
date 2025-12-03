@@ -2,7 +2,7 @@ import pygame
 
 from src.screens.menu_screen import MenuScreen
 from src.screens.level_select_screen import LevelSelectScreen
-# from src.screens.gameplay_screen import GameplayScreen
+from src.screens.gameplay_screen import GameplayScreen
 
 from data.save_manager import load_game_data
 from .load_sounds import _load_sound
@@ -14,6 +14,7 @@ class GameManager:
         self.screens = {
             "MENU": MenuScreen(self),
             "LEVEL": LevelSelectScreen(self),
+            "GAMEPLAY": GameplayScreen(self)
         }
 
         self.active_screen_key = "MENU"
