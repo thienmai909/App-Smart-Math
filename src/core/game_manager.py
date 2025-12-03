@@ -52,8 +52,10 @@ class GameManager:
     
     def get_level_best_score(self, level_key):
         """Lấy điểm cao nhất của level hiện tại."""
-        if level_key in self.game_data and "best_score" in self.game_data[level_key]:
-            return self.game_data[level_key]["best_score"]
+        # Giả định game_data là dictionary lưu điểm: {"scores": {"LEVEL_1": {"high_score": 150}, ...}
+        scores_data = self.game_data.get('scores', {})
+        if level_key in scores_data and "high_score" in scores_data[level_key]:
+            return scores_data[level_key]["high_score"]
         return 0
 
 
