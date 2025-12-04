@@ -370,37 +370,7 @@ class GameplayScreen(BaseScreen):
                 
         if self.selected_answer_index is not None and current_time >= self.show_feedback_until:
             self.load_next_question()
-
-    def _draw_settings_popup(self, surface):
-        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 150)) 
-        surface.blit(overlay, (0, 0))   
-        
-        surface.blit(self.assets['nen_caidat'], self.settings_rect.topleft)
-        
-        sound_icon = self.assets['on'] if self.sound_on else self.assets['off']
-        sound_icon_rect = sound_icon.get_rect(midright=(self.settings_rect.right - 40, self.sound_rect.centery))
-        surface.blit(sound_icon, sound_icon_rect.topleft)
-
-        bgm_icon = self.assets['on'] if self.bgm_on else self.assets['off']
-        bgm_icon_rect = bgm_icon.get_rect(midright=(self.settings_rect.right - 40, self.bgm_rect.centery))
-        surface.blit(bgm_icon, bgm_icon_rect.topleft)
-
-        if 'nut_back_icon' in self.assets:
-            icon_asset = self.assets['nut_back_icon']
-            icon_rect = icon_asset.get_rect(midright=(self.home_rect.right - 5, self.home_rect.centery))
-            surface.blit(icon_asset, icon_rect.topleft)
-
-        if 'nut_play_icon' in self.assets:
-            icon_asset = self.assets['nut_play_icon']
-            icon_rect = icon_asset.get_rect(midright=(self.replay_rect.right - 5, self.replay_rect.centery))
-            surface.blit(icon_asset, icon_rect.topleft)
-
-        pygame.draw.circle(surface, COLOR_WRONG, self.close_rect.center, 15)
-        close_text = self.font_small.render("X", True, COLOR_WHITE)
-        close_text_rect = close_text.get_rect(center=self.close_rect.center)
-        surface.blit(close_text, close_text_rect)
-
+            
     def draw(self, surface):      
         self.button_rects = []
         
