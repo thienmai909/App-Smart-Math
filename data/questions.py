@@ -304,6 +304,14 @@ def get_level_6_questions(num_questions=20):
         })
     return questions
 
+QUESTION_GENERATORS = {
+        "LEVEL_1": get_level_1_questions,
+        "LEVEL_2": get_level_2_questions,
+        "LEVEL_3": get_level_3_questions,
+        "LEVEL_4": get_level_4_questions,
+        "LEVEL_5": get_level_5_questions,
+        "LEVEL_6": get_level_6_questions,
+    }
 
 # ============================== TEST KHI CHẠY TRỰC TIẾP ==============================
 if __name__ == "__main__":

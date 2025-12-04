@@ -4,7 +4,18 @@ import time
 import random 
 from src.screens.base_screen import BaseScreen
 from src.config import * 
-VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'UTM-Avo.ttf')
+from data.save_manager import save_game_data 
+
+LEVELS = [
+    {"name": "LEVEL 1", "key": "LEVEL_1", "image_key": "lv1"},
+    {"name": "LEVEL 2", "key": "LEVEL_2", "image_key": "lv2"},
+    {"name": "LEVEL 3", "key": "LEVEL_3", "image_key": "lv3"},
+    {"name": "LEVEL 4", "key": "LEVEL_4", "image_key": "lv4"},
+    {"name": "LEVEL 5", "key": "LEVEL_5", "image_key": "lv5"},
+    {"name": "LEVEL 6", "key": "LEVEL_6", "image_key": "lv6"},
+]
+
+VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'Sniglet-Regular.ttf')
 
 # Kích thước cố định cho nút hành động 
 PROGRESS_BAR_WIDTH = 400
@@ -74,21 +85,58 @@ class GameplayScreen(BaseScreen):
         
         self.game_over_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200)
 
-        # --- KHỞI TẠO SETTINGS POP-UP
-        self.show_settings = False
-        self.settings_rect = self.assets['nen_caidat'].get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)) 
-        self.close_rect = pygame.Rect(self.settings_rect.right - 40, self.settings_rect.y + 10, 30, 30)
-        self.sound_rect = pygame.Rect(self.settings_rect.x + 50, self.settings_rect.y + 120, 300, 50)
-        self.bgm_rect = pygame.Rect(self.settings_rect.x + 50, self.settings_rect.y + 190, 300, 50)
-        self.home_rect = pygame.Rect(self.settings_rect.x + 50, self.settings_rect.y + 280, 300, 50) 
-        self.replay_rect = pygame.Rect(self.settings_rect.x + 50, self.settings_rect.y + 360, 300, 50) 
-        
-        self.sound_on = True 
-        self.bgm_on = True 
         
         self.timer_progress_rect = pygame.Rect(0, 0, PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT)
         self.timer_progress_rect.center = (SCREEN_WIDTH // 2, 35) 
+    
+    def get_level_best_score(self, level_key):
+        """Lấy điểm cao nhất của level hiện tại."""
+        # Giả định game_data là dictionary lưu điểm: {"scores": {"LEVEL_1": {"high_score": 150}, ...}
+        scores_data = self.game_manager.game_data.get('scores', {})
+        if level_key in scores_data and "high_score" in scores_data[level_key]:
+            return scores_data[level_key]["high_score"]
+        return 0
+
+
+    def calculate_stars(self, score):
+        if MAX_SCORE_PER_LEVEL <= 0:
+            return 0
         
+        score_ratio = score / MAX_SCORE_PER_LEVEL
+        
+        sorted_thresholds = sorted(STAR_THRESHOLDS.items(), key=lambda item: item[0], reverse=True)
+        
+        for stars, threshold in sorted_thresholds:
+            if score_ratio >= threshold:
+                return stars
+        return 0
+
+    def save_score(self, new_score):
+        if not self.game_manager.current_level_key:
+            return
+
+        current_data = self.game_manager.game_data.get('scores', {})
+        current_stars = self.game_manager.game_data.get('stars', [0] * len(LEVELS))
+        
+        new_stars = self.calculate_stars(new_score)
+        
+        level_data = current_data.get(self.game_manager.current_level_key, {'high_score': 0})
+        if new_score > level_data['high_score']:
+            level_data['high_score'] = new_score
+            current_data[self.game_manager.current_level_key] = level_data
+        
+        try:
+            level_index = next(i for i, level in enumerate(LEVELS) if level['key'] == self.game_manager.current_level_key)
+            if new_stars > current_stars[level_index]:
+                current_stars[level_index] = new_stars
+                self.game_manager.game_data['stars'] = current_stars
+                
+        except StopIteration:
+            return
+            
+        self.game_manager.game_data['scores'] = current_data
+        save_game_data(self.game_manager.game_data)
+
     def _load_assets(self):
         assets = {}
         assets['is_settings_fallback'] = False 
@@ -166,12 +214,6 @@ class GameplayScreen(BaseScreen):
                         fallback_surf.fill((200, 200, 200, 150))
                         assets[f'thanh_sao_{i}'] = fallback_surf
             
-            # 9. ASSETS SETTINGS POP-UP 
-            assets['nen_caidat'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'anvao_caidat.png')).convert_alpha()
-            assets['nen_caidat'] = pygame.transform.scale(assets['nen_caidat'], (400, 450))
-            assets['on'] = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'on.png')).convert_alpha(), (50, 30))
-            assets['off'] = pygame.transform.scale(pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'off.png')).convert_alpha(), (50, 30))
-
             try:
                 assets['nut_back_icon'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nut_back.png')).convert_alpha()
                 assets['nut_back_icon'] = pygame.transform.scale(assets['nut_back_icon'], ACTION_BUTTON_SIZE)
@@ -184,18 +226,6 @@ class GameplayScreen(BaseScreen):
             except pygame.error:
                 assets['nut_play_icon'] = pygame.Surface(ACTION_BUTTON_SIZE); assets['nut_play_icon'].fill(COLOR_CORRECT)
                 
-            # 10. TẢI ÂM THANH 
-            assets['sound'] = {}
-            assets['sound']['bgm'] = os.path.join(ASSETS_SOUND_DIR, 'nhacnen.mp3') 
-            try:
-                assets['sound']['click'] = pygame.mixer.Sound(os.path.join(ASSETS_SOUND_DIR, 'click_dapan.wav'))
-                assets['sound']['correct'] = pygame.mixer.Sound(os.path.join(ASSETS_SOUND_DIR, 'yes.mp3'))
-                assets['sound']['wrong'] = pygame.mixer.Sound(os.path.join(ASSETS_SOUND_DIR, 'no.mp3'))
-            except pygame.error as e:
-                assets['sound']['click'] = None
-                assets['sound']['correct'] = None
-                assets['sound']['wrong'] = None
-
         except pygame.error as e:
             # FALLBACK LỚN 
             assets['nen_chinh'] = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT)); assets['nen_chinh'].fill(COLOR_BG)
@@ -211,32 +241,18 @@ class GameplayScreen(BaseScreen):
             assets['is_settings_fallback'] = True 
             for i in range(4):
                     assets[f'thanh_sao_{i}'] = pygame.Surface(self.STAR_BAR_SIZE); assets[f'thanh_sao_{i}'].fill((200, 200, 200))
-            assets['nen_caidat'] = pygame.Surface((400, 450)); assets['nen_caidat'].fill((200, 150, 150))
-            assets['on'] = pygame.Surface((50, 30)); assets['on'].fill(COLOR_CORRECT)
-            assets['off'] = pygame.Surface((50, 30)); assets['off'].fill(COLOR_WRONG)
-            assets['nut_back_icon'] = pygame.Surface(ACTION_BUTTON_SIZE); assets['nut_back_icon'].fill(COLOR_ACCENT)
-            assets['nut_play_icon'] = pygame.Surface(ACTION_BUTTON_SIZE); assets['nut_play_icon'].fill(COLOR_CORRECT)
-            assets['sound'] = {'bgm': None, 'click': None, 'correct': None, 'wrong': None}
-
         return assets
 
     def on_enter(self):
         """Khởi động trò chơi khi màn hình này được kích hoạt."""
         # Lấy điểm cao nhất cho level hiện tại
         if self.game_manager.current_level_key:
-             self.best_score = self.game_manager.get_level_best_score(self.game_manager.current_level_key)
+             self.best_score = self.get_level_best_score(self.game_manager.current_level_key)
         else:
              self.best_score = 0
              
         self.reset_game()
         self.load_next_question()
-
-        if self.bgm_on and 'bgm' in self.assets['sound'] and self.assets['sound']['bgm']:
-            try:
-                pygame.mixer.music.load(self.assets['sound']['bgm'])
-                pygame.mixer.music.play(-1) # Phát lặp lại
-            except pygame.error as e:
-                pass
 
     def reset_game(self):
         self.score = 0
@@ -246,9 +262,8 @@ class GameplayScreen(BaseScreen):
         self.selected_answer_index = None
         self.final_stars = 0
         self.start_time = time.time()
-        self.show_settings = False
+        self.game_manager.menu.show_setting = False
         
-        pygame.mixer.music.stop()
 
     def load_next_question(self):
         
@@ -283,44 +298,17 @@ class GameplayScreen(BaseScreen):
         
         else:
             self.game_over = True
-            self.final_stars = self.game_manager.calculate_stars(self.score)
-            self.game_manager.save_score(self.score) 
+            self.final_stars = self.calculate_stars(self.score)
+            self.save_score(self.score) 
             
-            pygame.mixer.music.stop()
 
     def handle_input(self, event):   
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
             
-            if self.show_settings:
-                if self.close_rect.collidepoint(mouse_pos):
-                    self.show_settings = False
-                    return
-                
-                if self.sound_rect.collidepoint(mouse_pos):
-                    self.sound_on = not self.sound_on
-                    
-                elif self.bgm_rect.collidepoint(mouse_pos):
-                    self.bgm_on = not self.bgm_on
-                    if self.bgm_on and self.assets['sound']['bgm']:
-                             try:
-                                pygame.mixer.music.load(self.assets['sound']['bgm'])
-                                pygame.mixer.music.play(-1)
-                             except pygame.error as e:
-                                pass
-                    else:
-                        pygame.mixer.music.stop()
-                        
-                elif self.home_rect.collidepoint(mouse_pos):
-                    self.game_manager.switch_screen("LEVEL") 
-                    self.show_settings = False
-                    self.reset_game() 
-                elif self.replay_rect.collidepoint(mouse_pos):
-                    self.game_manager.question_index = 0
-                    self.reset_game()
-                    self.load_next_question() 
-                    self.show_settings = False
-                return 
+            if self.game_manager.menu.show_settings:
+                self.game_manager.menu.handle_input(event)
+                return
             
             if self.game_over:
                 if self.game_over_button_rect.collidepoint(mouse_pos):
@@ -329,7 +317,7 @@ class GameplayScreen(BaseScreen):
                 return 
             
             if self.settings_button_rect.collidepoint(mouse_pos):
-                self.show_settings = True 
+                self.game_manager.menu.show_settings = True 
                 return
 
             if self.selected_answer_index is None:
@@ -339,8 +327,8 @@ class GameplayScreen(BaseScreen):
                         return
 
     def process_answer(self, selected_index):
-        if selected_index >= 0 and self.assets['sound']['click'] and self.sound_on:
-             self.assets['sound']['click'].play()
+        if selected_index >= 0 and self.game_manager.sounds['click'] and self.game_manager.menu.sound_setting:
+            self.game_manager.sounds['click'].play()
              
         self.selected_answer_index = selected_index
         
@@ -350,35 +338,24 @@ class GameplayScreen(BaseScreen):
             
             if is_correct:
                 self.score += POINTS_CORRECT 
-                if self.assets['sound']['correct'] and self.sound_on:
-                     self.assets['sound']['correct'].play()
+                if self.game_manager.sounds['yes'] and self.game_manager.menu.sound_setting:
+                     self.game_manager.sounds['yes'].play()
             else:
                 self.score = max(0, self.score + POINTS_WRONG)
-                if self.assets['sound']['wrong'] and self.sound_on:
-                     self.assets['sound']['wrong'].play()
+                if self.game_manager.sounds['no'] and self.game_manager.menu.sound_setting:
+                     self.game_manager.sounds['no'].play()
         else:
             self.answer_is_correct = False
             self.score = max(0, self.score + POINTS_WRONG)
-            if self.assets['sound']['wrong'] and self.sound_on:
-                 self.assets['sound']['wrong'].play()
+            if self.game_manager.sounds['no'] and self.game_manager.menu.sound_setting:
+                 self.game_manager.sounds['no'].play()
 
         self.show_feedback_until = time.time() + 1.5 
 
     def update(self):
-        if self.show_settings:
-            if self.sound_on: pygame.mixer.set_reserved(0) 
-            else: pygame.mixer.set_reserved(1)
-            
-            if self.assets['sound']['bgm']:
-                if self.bgm_on and not pygame.mixer.music.get_busy():
-                    try:
-                        pygame.mixer.music.load(self.assets['sound']['bgm'])
-                        pygame.mixer.music.play(-1)
-                    except pygame.error: pass
-                elif not self.bgm_on and pygame.mixer.music.get_busy():
-                    pygame.mixer.music.stop()
-                 
-            return
+        if self.game_manager.menu.show_settings:            
+            # Điều khiển âm thanh
+            self.game_manager.menu.update()
 
         if self.game_over:
             return
@@ -424,10 +401,7 @@ class GameplayScreen(BaseScreen):
         close_text_rect = close_text.get_rect(center=self.close_rect.center)
         surface.blit(close_text, close_text_rect)
 
-    def draw(self): 
-        surface = self.game_manager._current_surface
-        if surface is None:
-            return          
+    def draw(self, surface):      
         self.button_rects = []
         
         # 0. VẼ NỀN CHÍNH
@@ -534,7 +508,7 @@ class GameplayScreen(BaseScreen):
             surface.blit(best_score_label, best_score_label_rect.topleft)
             surface.blit(best_score_value, best_score_value_rect.topleft)
 
-            # Nút Quay lại Menu (NEXT) 
+            # Nút Quay lại Home (NEXT) 
             if 'nut_next' in self.assets:
                 nut_next_rect = self.assets['nut_next'].get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50))
                 surface.blit(self.assets['nut_next'], nut_next_rect.topleft)
@@ -543,5 +517,5 @@ class GameplayScreen(BaseScreen):
                 pygame.draw.rect(surface, COLOR_CORRECT, self.game_over_button_rect, border_radius=0)
 
         # 7. VẼ POP-UP CÀI ĐẶT
-        if self.show_settings:
-            self._draw_settings_popup(surface)
+        if self.game_manager.menu.show_settings:
+            self.game_manager.menu.draw(surface)

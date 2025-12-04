@@ -2,6 +2,7 @@ import pygame
 import os
 from src.screens.base_screen import BaseScreen
 from src.config import *
+
 LEVELS = [
     {"name": "LEVEL 1", "key": "LEVEL_1", "image_key": "lv1"},
     {"name": "LEVEL 2", "key": "LEVEL_2", "image_key": "lv2"},
@@ -18,10 +19,7 @@ except NameError:
 
 
 # THÔNG SỐ PROGRESS BAR CỐ ĐỊNH
-PROGRESS_BAR_WIDTH = 400
-PROGRESS_BAR_HEIGHT = 40
-PROGRESS_BAR_PADDING = 5
-ACTION_BUTTON_SIZE = (40, 40) 
+
 
 class LevelSelectScreen(BaseScreen):
     def __init__(self, game_manager):
@@ -150,31 +148,13 @@ class LevelSelectScreen(BaseScreen):
             mouse_pos = event.pos
             
             # --- ƯU TIÊN 1: XỬ LÝ POP-UP SETTINGS NẾU ĐANG MỞ ---
-            if self.show_settings:
-                if self.close_rect.collidepoint(mouse_pos):
-                    self.show_settings = False
-                    return
-                
-                # Logic click bên trong pop-up
-                if self.sound_rect.collidepoint(mouse_pos):
-                    self.sound_on = not self.sound_on
-                    # Thêm logic điều khiển âm thanh game_manager tại đây
-                elif self.bgm_rect.collidepoint(mouse_pos):
-                    self.bgm_on = not self.bgm_on
-                    # Thêm logic điều khiển nhạc nền game_manager tại đây
-                elif self.home_rect.collidepoint(mouse_pos):
-                    self.game_manager.switch_screen("MENU")
-                    self.show_settings = False
-                elif self.replay_rect.collidepoint(mouse_pos):
-                    # Hiện tại đang chuyển về MENU
-                    self.game_manager.switch_screen("MENU") 
-                    self.show_settings = False
-                return 
+            if self.game_manager.menu.show_settings:
+                self.game_manager.menu.handle_input(event)
+                return
             
             # --- ƯU TIÊN 2: XỬ LÝ NÚT CÀI ĐẶT (MỞ POP-UP) ---
             if self.setting_button_rect.collidepoint(mouse_pos):
-                self.show_settings = True 
-                return
+                self.game_manager.menu.show_settings = True 
             
             # --- ƯU TIÊN 3: XỬ LÝ CÁC NÚT LEVEL ---
             for rect_data in self.level_rects:
@@ -202,19 +182,8 @@ class LevelSelectScreen(BaseScreen):
 
     def update(self):
         # Logic cập nhật âm thanh khi pop-up settings mở
-        if self.show_settings:
-            # Điều khiển âm thanh
-            if self.sound_on:
-                # Nếu sound_on, giải phóng kênh (cho phép âm thanh)
-                self.game_manager.sounds['click'].set_volume(1.0)
-            else:
-                # Nếu sound_off, đặt 1 kênh dự trữ (có thể mute toàn bộ sound effects)
-                self.game_manager.sounds['click'].set_volume(0.0)
-
-            if self.bgm_on:
-                pygame.mixer.music.unpause()   
-            else:
-                pygame.mixer.music.pause()   
+        if self.game_manager.menu.show_settings:
+             self.game_manager.menu.update()
                   
             
     def draw(self, surface):
@@ -290,39 +259,5 @@ class LevelSelectScreen(BaseScreen):
                 surface.blit(khoa_asset, khoa_rect.topleft)
     
         #  VẼ POP-UP CÀI ĐẶT nếu show_settings = True
-        if self.show_settings:
-            """Vẽ pop-up cài đặt lên trên màn hình.""" 
-            # Giả lập overlay
-            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 150)) 
-            surface.blit(overlay, (0, 0))   
-            
-            # Vẽ nền pop-up
-            surface.blit(self.assets['nen_caidat'], self.settings_rect.topleft)
-            
-            # --- VẼ CÁC THÔNG TIN/NÚT BÊN TRONG POPUP ---
-    
-            sound_icon = self.assets['on'] if self.sound_on else self.assets['off']
-            sound_icon_rect = sound_icon.get_rect(midright=(self.settings_rect.right - 40, self.sound_rect.centery))
-            surface.blit(sound_icon, sound_icon_rect.topleft)
-
-    
-            bgm_icon = self.assets['on'] if self.bgm_on else self.assets['off']
-            bgm_icon_rect = bgm_icon.get_rect(midright=(self.settings_rect.right - 40, self.bgm_rect.centery))
-            surface.blit(bgm_icon, bgm_icon_rect.topleft)
-
-            if 'nut_back_icon' in self.assets:
-                icon_asset = self.assets['nut_back_icon']
-                icon_rect = icon_asset.get_rect(midright=(self.home_rect.right -0, self.home_rect.centery))
-                surface.blit(icon_asset, icon_rect.topleft)
-
-            if 'nut_play_icon' in self.assets:
-                icon_asset = self.assets['nut_play_icon']
-                icon_rect = icon_asset.get_rect(midright=(self.replay_rect.right -0, self.replay_rect.centery))
-                surface.blit(icon_asset, icon_rect.topleft)
-
-            # Nút đóng pop-up (X)
-            pygame.draw.circle(surface, COLOR_WRONG, self.close_rect.center, 15)
-            close_text = self.font_small.render("X", True, COLOR_WHITE)
-            close_text_rect = close_text.get_rect(center=self.close_rect.center)
-            surface.blit(close_text, close_text_rect)
+        if self.game_manager.menu.show_settings:
+            self.game_manager.menu.draw(surface)
