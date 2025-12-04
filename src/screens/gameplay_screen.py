@@ -448,10 +448,19 @@ class GameplayScreen(BaseScreen):
                     overlay_surf.fill((color_overlay[0], color_overlay[1], color_overlay[2], 150))
                     temp_dapan_surf.blit(overlay_surf, (0, 0))                
                 surface.blit(temp_dapan_surf, button_rect.topleft)               
-                # Màu chữ đáp án là màu đen, chỉ giữ lại đáp án
-                answer_text = self.font_medium.render(f"{answer}", True, COLOR_BLACK) 
+                
+                # --- ĐOẠN CODE ĐÃ ĐƯỢC CHỈNH SỬA TẠI ĐÂY ---
+                # Chuyển chỉ số (0, 1, 2, 3) thành chữ cái ('A', 'B', 'C', 'D')
+                label = chr(65 + i) # 65 là mã ASCII của 'A'
+                
+                # Tạo nội dung đáp án hoàn chỉnh (ví dụ: "A. 150")
+                full_answer_content = f"{label}. {answer}"
+                
+                # Màu chữ đáp án là màu đen
+                answer_text = self.font_medium.render(full_answer_content, True, COLOR_BLACK) 
                 answer_text_rect = answer_text.get_rect(center=button_rect.center) 
                 surface.blit(answer_text, answer_text_rect)
+                # --------------------------------------------------
             
         # 5. VẼ THÔNG BÁO GAME OVER
         if self.game_over:
