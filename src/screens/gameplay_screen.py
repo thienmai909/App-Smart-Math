@@ -180,7 +180,7 @@ class GameplayScreen(BaseScreen):
 
             # 2. NỀN CÂU HỎI 
             assets['nen_cauhoi'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nencauhoi.png')).convert_alpha()
-            assets['nen_cauhoi'] = pygame.transform.scale(assets['nen_cauhoi'], (750, 200))
+            assets['nen_cauhoi'] = pygame.transform.scale(assets['nen_cauhoi'], (950, 200))
             
             # 3. NỀN ĐÁP ÁN 
             assets['nen_dapan'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nendapan.png')).convert_alpha()
@@ -307,6 +307,7 @@ class GameplayScreen(BaseScreen):
                  random.shuffle(answers)
 
             self.current_question = {
+                "prefix": q_data.get("prefix", "Hãy trả lời câu hỏi sau:"), # <--- ĐÃ CẬP NHẬT: Lấy prefix
                 "question": q_data["question"],
                 "answers": answers, 
                 "correct_answer": correct_answer,
@@ -436,22 +437,19 @@ class GameplayScreen(BaseScreen):
                 question_rect_center = question_bg_rect.center
             else:
                 question_rect_center = self.question_pos
+            
             question_num = self.current_question.get("question_number", self.game_manager.question_index)
             question_content = self.current_question["question"]
+            question_prefix = self.current_question.get("prefix", "Hãy tính toán phép toán sau:") # <--- ĐÃ CẬP NHẬT: Lấy prefix
             
-            # --- TẠO VÀ VẼ CÂU HỎI (Dùng ICiel Showcase Script) ---
-            
-           # 1. Phần mở đầu cố định (Dòng 1)
-            prefix_text = f"Câu {question_num} "
+            # --- TẠO VÀ VẼ CÂU HỎI 
+            # 1. Phần mở đầu (Dòng 1: Số câu + Lời dẫn)
+            prefix_full_text = f"Câu {question_num}: {question_prefix}" # <--- KẾT HỢP: Số câu và Lời dẫn
             # Dùng font ICiel Showcase Script cho câu hỏi
-            prefix_surface = self.font_question.render(prefix_text, True, COLOR_BLACK) 
+            prefix_surface = self.font_question.render(prefix_full_text, True, COLOR_BLACK) 
             
             # 2. Phần phép toán (Dòng 2)
             content_surface = self.font_question.render(question_content, True, COLOR_BLACK)            
-            
-            # Tính toán vị trí
-            # Dòng 1: Đặt ở phía trên trung tâm Y một chút
-            # Lấy chiều cao của một dòng
             line_height = prefix_surface.get_height()
             
             # Vị trí trung tâm Y của khung câu hỏi
