@@ -119,20 +119,20 @@ def get_level_4_questions(num_questions=20):
 
         if op == "+":
             b = x + a
-            question_text = f"Tìm x: x + {a} = {b}"
+            question_text = f"Thực hiện phép toán tìm x: x + {a} = {b}"
         elif op == "-":
             a = random.randint(2, 15)
             x = random.randint(a + 5, a + 30)  # đảm bảo x > a
             b = x - a
-            question_text = f"Tìm x: x − {a} = {b}"
+            question_text = f"Thực hiện phép toán tìm x: x − {a} = {b}"
         elif op == "×":
             b = x * a
-            question_text = f"Tìm x: x × {a} = {b}"
+            question_text = f"Thực hiện phép toán tìm x: x × {a} = {b}"
         else:  # chia
             a = random.randint(2, 10)
             x = random.randint(6, 30) 
             b = x * a
-            question_text = f"Tìm x: {b} : {a} = x"
+            question_text = f"Thực hiện phép toán tìm x: {b} : {a} = x"
 
         options = _create_options(x, min_val=1, max_val=50)
 
@@ -196,14 +196,14 @@ def get_level_5_questions(num_questions=20):
             num = random.randint(2, 15) * multiplier
             den = random.randint(2, 15) * multiplier
             frac = Fraction(num, den)
-            question_text = f"Rút gọn phân số: {num}/{den}"
+            question_text = f"Hãy rút gọn phân số sau: {num}/{den}"
             correct_str = f"{frac.numerator}/{frac.denominator}"
 
         elif type_q == "cong":
             f1 = Fraction(random.randint(1, 12), random.randint(2, 12))
             f2 = Fraction(random.randint(1, 12), random.randint(2, 12))
             result = f1 + f2
-            question_text = f"Tính: {f1.numerator}/{f1.denominator} + {f2.numerator}/{f2.denominator} = ?"
+            question_text = f"Thực hiện phép tính tổng hai phân số: {f1.numerator}/{f1.denominator} + {f2.numerator}/{f2.denominator} = ?"
             correct_str = f"{result.numerator}/{result.denominator}"
 
         elif type_q == "tru":
@@ -212,14 +212,14 @@ def get_level_5_questions(num_questions=20):
             if f1 < f2:
                 f1, f2 = f2, f1  # đảm bảo kết quả dương
             result = f1 - f2
-            question_text = f"Tính: {f1.numerator}/{f1.denominator} - {f2.numerator}/{f2.denominator} = ?"
+            question_text = f"Thực hiện phép trừ hai phân số: {f1.numerator}/{f1.denominator} - {f2.numerator}/{f2.denominator} = ?"
             correct_str = f"{result.numerator}/{result.denominator}"
 
         elif type_q == "nhan":
             f1 = Fraction(random.randint(1, 10), random.randint(2, 10))
             f2 = Fraction(random.randint(1, 10), random.randint(2, 10))
             result = f1 * f2
-            question_text = f"Tính: {f1.numerator}/{f1.denominator} × {f2.numerator}/{f2.denominator} = ?"
+            question_text = f"Thực hiện phép nhân hai phân số: {f1.numerator}/{f1.denominator} × {f2.numerator}/{f2.denominator} = ?"
             correct_str = f"{result.numerator}/{result.denominator}"
 
         else:  # chia
@@ -229,7 +229,7 @@ def get_level_5_questions(num_questions=20):
             result = f1 / f2
             if result.denominator > 20:  # nếu mẫu quá lớn thì bỏ
                 result = Fraction(random.randint(1, 10), random.randint(2, 10))
-            question_text = f"Tính: {f1.numerator}/{f1.denominator} : {f2.numerator}/{f2.denominator} = ?"
+            question_text = f"Thực hiện phép chia hai phân số: {f1.numerator}/{f1.denominator} : {f2.numerator}/{f2.denominator} = ?"
             correct_str = f"{result.numerator}/{result.denominator}"
 
         # Tạo đáp án sai dạng phân số (chuỗi)
@@ -257,7 +257,7 @@ def get_level_6_questions(num_questions=20):
             b = random.randint(1, 15)
             x = random.randint(3, 20)
             c = a * x + b
-            question_text = f"Giải phương trình: {a}x + {b} = {c}"
+            question_text = f"Giải phương trình bậc 1: {a}x + {b} = {c}"
             answer = x
 
         elif pattern == 2:
@@ -266,7 +266,7 @@ def get_level_6_questions(num_questions=20):
             b = random.randint(2, 10)
             x = random.randint(5, 18)
             c = a * (x + b)
-            question_text = f"Giải phương trình: {a}(x + {b}) = {c}"
+            question_text = f"Giải phương trình bậc 1: {a}(x + {b}) = {c}"
             answer = x
 
         elif pattern == 3:
@@ -275,7 +275,7 @@ def get_level_6_questions(num_questions=20):
             b = random.randint(5, 20)
             x = random.randint(6, 20)
             c = a * x - b
-            question_text = f"Giải phương trình: {a}x − {b} = {c}"
+            question_text = f"Giải phương trình bậc 1: {a}x − {b} = {c}"
             answer = x
 
         elif pattern == 4:
@@ -286,14 +286,14 @@ def get_level_6_questions(num_questions=20):
             # Đảm bảo x chia hết cho a
             x = ((x + a - 1) // a) * a  
             c = x // a + b
-            question_text = f"Tìm x (số nguyên): x : {a} + {b} = {c}"
+            question_text = f"Tìm x (số nguyên): {a} + {b} = {c}"
             answer = x
 
         else:  # pattern == 5: hỗn hợp 2 vế
             x = random.randint(8, 25)
             left_add = random.randint(3, 12)
             right_add = random.randint(5, 15)
-            question_text = f"Tìm x: 2x + {left_add} = {2*x + left_add + right_add} và x − 5 = {x - 5}"
+            question_text = f"Tính tổng hai vế phương trình: + {left_add} = {2*x + left_add + right_add} và x − 5 = {x - 5}"
             answer = x
 
         options = _create_options(answer, min_val=1, max_val=80)

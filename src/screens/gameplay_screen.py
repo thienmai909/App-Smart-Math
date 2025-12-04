@@ -3,7 +3,7 @@ import os
 import time
 import random 
 from src.screens.base_screen import BaseScreen
-from src.config import * 
+from src.config import *
 from data.save_manager import save_game_data 
 
 LEVELS = [
@@ -22,6 +22,17 @@ PROGRESS_BAR_WIDTH = 400
 PROGRESS_BAR_HEIGHT = 40
 PROGRESS_BAR_PADDING = 5
 ACTION_BUTTON_SIZE = (40, 40) 
+
+# --- KHAI BÁO FONT CHO CÂU HỎI ---
+# Đảm bảo file 'ICielShowcaseScript.ttf' tồn tại trong thư mục font của bạn
+QUESTION_FONT_FILE = 'ICielShowcaseScript.ttf'
+QUESTION_FONT_PATH = os.path.join(ASSETS_FONT_DIR, QUESTION_FONT_FILE)
+
+# --- KHAI BÁO FONT MỚI CHO ĐIỂM SỐ/THỜI GIAN ---
+# Đảm bảo file 'Pacific.ttf' tồn tại trong thư mục font của bạn
+SCORE_TIMER_FONT_FILE = 'Pacific.ttf'
+SCORE_TIMER_FONT_PATH = os.path.join(ASSETS_FONT_DIR, SCORE_TIMER_FONT_FILE)
+# --------------------------------------------------
 
 class GameplayScreen(BaseScreen):
     def __init__(self, game_manager):
@@ -46,17 +57,36 @@ class GameplayScreen(BaseScreen):
                 self.font_large = pygame.font.Font(selected_font_path, FONT_SIZE_LARGE)
                 self.font_small = pygame.font.Font(selected_font_path, FONT_SIZE_SMALL) 
                 self.font_medium = pygame.font.Font(selected_font_path, FONT_SIZE_MEDIUM)
+                
+                # --- KHỞI TẠO FONT CHO ĐIỂM/THỜI GIAN (Pacific) ---
+                if os.path.exists(SCORE_TIMER_FONT_PATH):
+                     # Tăng kích thước font cho nổi bật
+                     self.font_score_timer = pygame.font.Font(SCORE_TIMER_FONT_PATH, FONT_SIZE_LARGE + 10) 
+                else:
+                     self.font_score_timer = self.font_large # Dùng font large nếu không tìm thấy font riêng
+                
+                # --- KHỞI TẠO FONT CHO CÂU HỎI (ICiel Showcase Script) ---
+                if os.path.exists(QUESTION_FONT_PATH):
+                     self.font_question = pygame.font.Font(QUESTION_FONT_PATH, FONT_SIZE_LARGE) 
+                else:
+                     self.font_question = self.font_large # Dùng font large nếu không tìm thấy font riêng
+                # --------------------------------------------------
+
             else:
                 self.font_title = pygame.font.SysFont("Arial", FONT_SIZE_TITLE)
                 self.font_large = pygame.font.SysFont("Arial", FONT_SIZE_LARGE)
                 self.font_small = pygame.font.SysFont("Arial", FONT_SIZE_SMALL)
                 self.font_medium = pygame.font.SysFont("Arial", FONT_SIZE_MEDIUM)
-                
+                self.font_score_timer = self.font_large # Dự phòng
+                self.font_question = self.font_large # Dự phòng
+
         except pygame.error:
             self.font_title = pygame.font.SysFont("Arial", FONT_SIZE_TITLE)
             self.font_large = pygame.font.SysFont("Arial", FONT_SIZE_LARGE)
             self.font_small = pygame.font.SysFont("Arial", FONT_SIZE_SMALL)
             self.font_medium = pygame.font.SysFont("Arial", FONT_SIZE_MEDIUM)
+            self.font_score_timer = self.font_large # Dự phòng
+            self.font_question = self.font_large # Dự phòng
         
         # Kích thước cố định 
         self.ANSWER_BUTTON_SIZE = (350, 80)
@@ -380,12 +410,14 @@ class GameplayScreen(BaseScreen):
         # 1. VẼ ĐIỂM SỐ VÀ TIMER 
      
         # VẼ THỜI GIAN CÒN LẠI (SỐ GIÂY) - Center Top
-        timer_text_content = self.font_large.render(f"Thời gian:{self.time_left}", True, COLOR_ACCENT) 
+        # --- SỬ DỤNG FONT MỚI CHO THỜI GIAN (Pacific) ---
+        timer_text_content = self.font_score_timer.render(f"Thời gian:{self.time_left}", True, COLOR_ACCENT) 
         timer_text_rect = timer_text_content.get_rect(center=(SCREEN_WIDTH // 2, 35)) 
         surface.blit(timer_text_content, timer_text_rect)
         
         # VẼ ĐIỂM SỐ HIỆN TẠI (Top Left)
-        score_label = self.font_small.render(f"ĐIỂM: {self.score}", True, COLOR_BLACK) 
+        # --- SỬ DỤNG FONT MỚI CHO ĐIỂM (Pacific) ---
+        score_label = self.font_score_timer.render(f"ĐIỂM: {self.score}", True, COLOR_BLACK) 
         score_label_rect = score_label.get_rect(topleft=(20, 20))
         surface.blit(score_label, score_label_rect.topleft) 
 
@@ -407,16 +439,36 @@ class GameplayScreen(BaseScreen):
             question_num = self.current_question.get("question_number", self.game_manager.question_index)
             question_content = self.current_question["question"]
             
-            # Màu chữ câu hỏi là màu đen
-            bold_text = f"Câu {question_num}: "
-            bold_surface = self.font_large.render(bold_text, True, COLOR_BLACK) 
-            content_surface = self.font_large.render(question_content, True, COLOR_BLACK)            
-            total_width = bold_surface.get_width() + content_surface.get_width()
-            start_x = question_rect_center[0] - total_width // 2
-            start_y = question_rect_center[1]           
-            bold_rect = bold_surface.get_rect(midleft=(start_x, start_y))
-            surface.blit(bold_surface, bold_rect.topleft)
-            content_rect = content_surface.get_rect(midleft=(bold_rect.right, start_y))
+            # --- TẠO VÀ VẼ CÂU HỎI (Dùng ICiel Showcase Script) ---
+            
+           # 1. Phần mở đầu cố định (Dòng 1)
+            prefix_text = f"Câu {question_num} "
+            # Dùng font ICiel Showcase Script cho câu hỏi
+            prefix_surface = self.font_question.render(prefix_text, True, COLOR_BLACK) 
+            
+            # 2. Phần phép toán (Dòng 2)
+            content_surface = self.font_question.render(question_content, True, COLOR_BLACK)            
+            
+            # Tính toán vị trí
+            # Dòng 1: Đặt ở phía trên trung tâm Y một chút
+            # Lấy chiều cao của một dòng
+            line_height = prefix_surface.get_height()
+            
+            # Vị trí trung tâm Y của khung câu hỏi
+            center_y = question_rect_center[1]
+            
+            # Vị trí Y cho Dòng 1 (Tiêu đề)
+            prefix_y = center_y - line_height // 2 - 20 # -20 để nhích lên trên
+            
+            # Vị trí Y cho Dòng 2 (Phép toán)
+            content_y = center_y + line_height // 2 + 10 # +10 để nhích xuống dưới
+
+            # VẼ PHẦN MỞ ĐẦU (Dòng 1)
+            prefix_rect = prefix_surface.get_rect(center=(question_rect_center[0], prefix_y))
+            surface.blit(prefix_surface, prefix_rect.topleft)
+            
+            # VẼ PHẦN PHÉP TOÁN (Dòng 2)
+            content_rect = content_surface.get_rect(center=(question_rect_center[0], content_y))
             surface.blit(content_surface, content_rect.topleft)
 
             # 4. VẼ 4 ĐÁP ÁN
@@ -449,18 +501,14 @@ class GameplayScreen(BaseScreen):
                     temp_dapan_surf.blit(overlay_surf, (0, 0))                
                 surface.blit(temp_dapan_surf, button_rect.topleft)               
                 
-                # --- ĐOẠN CODE ĐÃ ĐƯỢC CHỈNH SỬA TẠI ĐÂY ---
-                # Chuyển chỉ số (0, 1, 2, 3) thành chữ cái ('A', 'B', 'C', 'D')
-                label = chr(65 + i) # 65 là mã ASCII của 'A'
-                
-                # Tạo nội dung đáp án hoàn chỉnh (ví dụ: "A. 150")
+                # --- THÊM NHÃN A, B, C, D VÀO TRƯỚC ĐÁP ÁN ---
+                label = chr(65 + i)
                 full_answer_content = f"{label}. {answer}"
                 
                 # Màu chữ đáp án là màu đen
                 answer_text = self.font_medium.render(full_answer_content, True, COLOR_BLACK) 
                 answer_text_rect = answer_text.get_rect(center=button_rect.center) 
                 surface.blit(answer_text, answer_text_rect)
-                # --------------------------------------------------
             
         # 5. VẼ THÔNG BÁO GAME OVER
         if self.game_over:
