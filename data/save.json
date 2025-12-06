@@ -8,11 +8,31 @@
         0
     ],
     "stars": [
-        3,
+        1,
+        2,
         2,
         2,
         1,
-        2,
-        3
-    ]
+        0
+    ],
+    "scores": {
+        "LEVEL_2": {
+            "high_score": 185
+        },
+        "LEVEL_1": {
+            "high_score": 125
+        },
+        "LEVEL_3": {
+            "high_score": 170
+        },
+        "LEVEL_4": {
+            "high_score": 175
+        },
+        "LEVEL_5": {
+            "high_score": 110
+        },
+        "LEVEL_6": {
+            "high_score": 5
+        }
+    }
 }

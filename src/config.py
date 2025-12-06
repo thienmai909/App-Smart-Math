@@ -1,4 +1,3 @@
-# config.py
 import os
 
 # --- THÔNG SỐ MÀN HÌNH ---
@@ -16,7 +15,7 @@ ASSETS_FONT_DIR = os.path.join(ASSETS_DIR, 'fonts')
 MAIN_FONT = os.path.join(ASSETS_FONT_DIR, 'main_font.ttf')
 
 # --- THÔNG SỐ GAMEPLAY & SAO ---
-TIME_LIMIT = 30 
+TIME_LIMIT = 30 + 1 # Bù thời gian render (+1)
 POINTS_CORRECT = 10
 POINTS_WRONG = -5
 MAX_QUESTIONS = 20 
@@ -45,3 +44,9 @@ FONT_SIZE_TITLE = 80
 FONT_SIZE_LARGE = 48
 FONT_SIZE_MEDIUM = 36
 FONT_SIZE_SMALL = 24
+
+# --- BAR SIZE ---
+PROGRESS_BAR_WIDTH = 400
+PROGRESS_BAR_HEIGHT = 40
+PROGRESS_BAR_PADDING = 5
+ACTION_BUTTON_SIZE = (40, 40) 
