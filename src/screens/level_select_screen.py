@@ -13,7 +13,7 @@ LEVELS = [
 ]
 
 try:
-    VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'Sniglet-ExtraBold.ttf')
+    VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'Nunito-ExtraBold.ttf')
 except NameError:
     VIETNAMESE_FONT_PATH = None
 

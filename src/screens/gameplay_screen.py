@@ -15,7 +15,7 @@ LEVELS = [
     {"name": "LEVEL 6", "key": "LEVEL_6", "image_key": "lv6"},
 ]
 
-VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'Sniglet-Regular.ttf')
+VIETNAMESE_FONT_PATH = os.path.join(ASSETS_FONT_DIR, 'Nunito-ExtraBold.ttf')
 
 # Kích thước cố định cho nút hành động 
 PROGRESS_BAR_WIDTH = 400
@@ -25,7 +25,7 @@ ACTION_BUTTON_SIZE = (40, 40)
 
 # --- KHAI BÁO FONT CHO CÂU HỎI ---
 # Đảm bảo file 'ICielShowcaseScript.ttf' tồn tại trong thư mục font của bạn
-QUESTION_FONT_FILE = 'ICielShowcaseScript.ttf'
+QUESTION_FONT_FILE = 'Nunito-ExtraBold.ttf'
 QUESTION_FONT_PATH = os.path.join(ASSETS_FONT_DIR, QUESTION_FONT_FILE)
 
 # --- KHAI BÁO FONT MỚI CHO ĐIỂM SỐ/THỜI GIAN ---
