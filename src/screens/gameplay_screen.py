@@ -398,56 +398,94 @@ class GameplayScreen(BaseScreen):
         surface.blit(best_score_value, (100, bar_pos_rect.y))
 
         # --- CÂU HỎI VÀ ĐÁP ÁN ---
+        # --- CÂU HỎI (TỰ ĐỘNG GIÃN CHIỀU RỘNG & CHIỀU CAO) ---
         if not self.game_over and self.current_question:
-            q_bg_rect = self.assets['nen_cauhoi'].get_rect(center=self.question_pos)
-            surface.blit(self.assets['nen_cauhoi'], q_bg_rect)
-            
-            p_surf = self.font_question.render(f"Câu {self.current_question['question_number']}: {self.current_question['prefix']}", True, COLOR_BLACK) 
-            surface.blit(p_surf, p_surf.get_rect(center=(q_bg_rect.centerx, q_bg_rect.centery - 45)))
-
             q_text = self.current_question["question"]
-            target_y = q_bg_rect.centery + 25 
+            math_part = q_text.split("=")[0].strip() if "=" in q_text else q_text
+            eq_text = "= ?" if "=" in q_text else ""
+            eq_surf = self.font_question.render(eq_text, True, COLOR_BLACK)
             
-            # Xử lý căn lề dấu = thẳng hàng với phân số
-            if "=" in q_text:
-                parts = q_text.split("=")
-                math_part = parts[0].strip()
-                
-                # Tính toán chiều rộng của phần phân số/toán học an toàn
-                f_w = 0
-                if "/" in math_part:
-                    temp_parts = math_part.split("/")
-                    if len(temp_parts) >= 2:
-                        f_w = max(self.font_question.size(temp_parts[0].strip())[0], 
-                                 self.font_question.size(temp_parts[1].strip())[0]) + 10
-                if f_w == 0:
-                    f_w = self.font_question.size(math_part)[0]
+            # 1. Tính toán kích thước nội dung câu hỏi
+            f_w = 0
+            f_h = 0
+            if "/" in math_part:
+                temp_parts = math_part.split("/")
+                if len(temp_parts) >= 2:
+                    num_size = self.font_question.size(temp_parts[0].strip())
+                    den_size = self.font_question.size(temp_parts[1].strip())
+                    f_w = max(num_size[0], den_size[0]) + 20
+                    # Chiều cao = tử + mẫu + khoảng cách + gạch ngang
+                    f_h = num_size[1] + den_size[1] + 20 
+            
+            if f_w == 0: 
+                f_w = self.font_question.size(math_part)[0]
+                f_h = self.font_question.size(math_part)[1]
 
-                eq_surf = self.font_question.render("= ?", True, COLOR_BLACK)
-                total_w = f_w + 20 + eq_surf.get_width()
-                start_x = q_bg_rect.centerx - total_w // 2
-                
-                self.draw_fraction(surface, math_part, (start_x + f_w // 2, target_y), self.font_question, COLOR_BLACK)
-                surface.blit(eq_surf, eq_surf.get_rect(left=start_x + f_w + 20, centery=target_y))
-            else:
-                self.draw_fraction(surface, q_text, (q_bg_rect.centerx, target_y), self.font_question, COLOR_BLACK)
+            total_content_w = f_w + (25 if eq_text else 0) + eq_surf.get_width()
+            
+            # 2. Điều chỉnh khung câu hỏi linh hoạt
+            dynamic_q_width = max(950, total_content_w + 120)
+            # Chiều cao tối thiểu 200, nếu phân số cao quá thì tăng thêm
+            dynamic_q_height = max(200, f_h + 100) 
+            
+            q_bg_img = pygame.transform.smoothscale(self.assets['nen_cauhoi'], (int(dynamic_q_width), int(dynamic_q_height)))
+            q_bg_rect = q_bg_img.get_rect(center=self.question_pos)
+            surface.blit(q_bg_img, q_bg_rect)
+            
+            # Vẽ tiêu đề "Câu X: ..."
+            p_surf = self.font_question.render(f"Câu {self.current_question['question_number']}: {self.current_question['prefix']}", True, COLOR_BLACK)
+            surface.blit(p_surf, p_surf.get_rect(center=(q_bg_rect.centerx, q_bg_rect.top + 45)))
 
+            # Vẽ phân số ở giữa vùng trống còn lại của khung
+            draw_y = q_bg_rect.top + (dynamic_q_height + 45) // 2
+            start_x_q = q_bg_rect.centerx - total_content_w // 2
+            self.draw_fraction(surface, math_part, (start_x_q + f_w // 2, draw_y), self.font_question, COLOR_BLACK)
+            if eq_text:
+                surface.blit(eq_surf, eq_surf.get_rect(left=start_x_q + f_w + 20, centery=draw_y))
+
+            # --- ĐÁP ÁN (TỰ ĐỘNG GIÃN CHIỀU RỘNG & CHIỀU CAO) ---
             for i, opt_text in enumerate(self.current_question["answers"]):
+                # 1. Tính toán kích thước nội dung đáp án
+                opt_w = 0
+                opt_h = 0
+                if "/" in opt_text:
+                    opt_parts = opt_text.split("/")
+                    if len(opt_parts) >= 2:
+                        num_size_ans = self.font_medium.size(opt_parts[0].strip())
+                        den_size_ans = self.font_medium.size(opt_parts[1].strip())
+                        opt_w = max(num_size_ans[0], den_size_ans[0]) + 15
+                        opt_h = num_size_ans[1] + den_size_ans[1] + 15
+                
+                if opt_w == 0: 
+                    opt_w = self.font_medium.size(opt_text)[0]
+                    opt_h = self.font_medium.size(opt_text)[1]
+
+                # 2. Điều chỉnh kích thước nút đáp án (Min 350x80)
+                dynamic_ans_width = max(350, opt_w + 100)
+                dynamic_ans_height = max(80, opt_h + 30)
+                
                 pos_x = SCREEN_WIDTH // 2 + (-255 if i % 2 == 0 else 255)
-                pos_y = self.answer_start_y + (i // 2) * self.answer_spacing
-                rect = pygame.Rect(0, 0, 350, 80)
+                # Tăng khoảng cách Y nếu các nút quá cao để tránh đè nhau
+                y_offset = (i // 2) * max(self.answer_spacing, dynamic_ans_height + 20)
+                pos_y = self.answer_start_y + y_offset
+                
+                rect = pygame.Rect(0, 0, int(dynamic_ans_width), int(dynamic_ans_height))
                 rect.center = (pos_x, pos_y)
                 self.button_rects.append(rect)
                 
-                ans_img = self.assets['nen_dapan'].copy()
+                # 3. Vẽ khung đáp án co giãn
+                ans_img = pygame.transform.smoothscale(self.assets['nen_dapan'], (rect.width, rect.height))
+                
                 if self.selected_answer_index is not None:
                     color = COLOR_CORRECT if i == self.current_question["correct_index"] else (COLOR_WRONG if i == self.selected_answer_index else None)
                     if color:
-                        overlay = pygame.Surface((342, 77), pygame.SRCALPHA)
+                        overlay = pygame.Surface((rect.width - 8, rect.height - 6), pygame.SRCALPHA)
                         pygame.draw.rect(overlay, (*color, 155), overlay.get_rect(), border_radius=23)
-                        ans_img.blit(overlay, (4, 2))
+                        ans_img.blit(overlay, (4, 3))
+                
                 surface.blit(ans_img, rect.topleft)
                 
+                # 4. Vẽ nhãn A, B... và phân số
                 label_surf = self.font_medium.render(f"{chr(65+i)}.", True, COLOR_BLACK)
                 surface.blit(label_surf, (rect.left + 25, rect.centery - label_surf.get_height() // 2))
                 self.draw_fraction(surface, opt_text, (rect.centerx + 15, rect.centery), self.font_medium, COLOR_BLACK)
