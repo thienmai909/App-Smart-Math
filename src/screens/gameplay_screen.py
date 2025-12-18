@@ -107,8 +107,48 @@ class GameplayScreen(BaseScreen):
 
         self.assets = self._load_assets()
 
+    def parse_math_expression(self, expression):
+        """
+        Phân tích biểu thức toán học thành các thành phần:
+        - Phân số (dạng a/b)
+        - Toán tử (+, -, ×, :)
+        - Số nguyên
+        
+        Ví dụ: "6/8 + 3/7" -> [("fraction", "6/8"), ("operator", "+"), ("fraction", "3/7")]
+        """
+        components = []
+        i = 0
+        expression = expression.strip()
+        
+        while i < len(expression):
+            # Bỏ qua khoảng trắng
+            if expression[i].isspace():
+                i += 1
+                continue
+            
+            # Kiểm tra toán tử
+            if expression[i] in ['+', '-', '×', ':', '−', '÷']:
+                components.append(("operator", expression[i]))
+                i += 1
+                continue
+            
+            # Tìm số hoặc phân số
+            start = i
+            # Đọc đến khi gặp toán tử hoặc hết chuỗi
+            while i < len(expression) and expression[i] not in ['+', '-', '×', ':', '−', '÷']:
+                i += 1
+            
+            token = expression[start:i].strip()
+            
+            if '/' in token:
+                components.append(("fraction", token))
+            elif token:
+                components.append(("number", token))
+        
+        return components
+
     def draw_fraction(self, surface, text, center_pos, font, color):
-        """Hàm hỗ trợ vẽ phân số an toàn"""
+        """Hàm hỗ trợ vẽ phân số đơn lẻ"""
         if "/" in text:
             parts = text.split("/")
             if len(parts) >= 2:
@@ -129,6 +169,58 @@ class GameplayScreen(BaseScreen):
         surf = font.render(text, True, color)
         surface.blit(surf, surf.get_rect(center=center_pos))
         return surf.get_width()
+    
+    def draw_math_expression(self, surface, expression, center_pos, font, color):
+        """
+        Vẽ biểu thức toán học phức tạp (có nhiều phân số và toán tử)
+        Trả về chiều rộng tổng của biểu thức
+        """
+        components = self.parse_math_expression(expression)
+        
+        # Tính toán kích thước từng thành phần và tổng chiều rộng
+        component_sizes = []
+        total_width = 0
+        max_height = 0
+        
+        for comp_type, comp_value in components:
+            if comp_type == "fraction":
+                # Tính kích thước phân số
+                parts = comp_value.split("/")
+                if len(parts) >= 2:
+                    num_size = font.size(parts[0].strip())
+                    den_size = font.size(parts[1].strip())
+                    width = max(num_size[0], den_size[0]) + 20
+                    height = num_size[1] + den_size[1] + 20
+                else:
+                    width, height = font.size(comp_value)
+            elif comp_type == "operator":
+                width, height = font.size(f" {comp_value} ")
+            else:  # number
+                width, height = font.size(comp_value)
+            
+            component_sizes.append((comp_type, comp_value, width, height))
+            total_width += width
+            max_height = max(max_height, height)
+        
+        # Vẽ từng thành phần
+        current_x = center_pos[0] - total_width // 2
+        
+        for comp_type, comp_value, width, height in component_sizes:
+            if comp_type == "fraction":
+                # Vẽ phân số
+                self.draw_fraction(surface, comp_value, (current_x + width // 2, center_pos[1]), font, color)
+            elif comp_type == "operator":
+                # Vẽ toán tử
+                op_surf = font.render(f" {comp_value} ", True, color)
+                surface.blit(op_surf, op_surf.get_rect(center=(current_x + width // 2, center_pos[1])))
+            else:  # number
+                # Vẽ số
+                num_surf = font.render(comp_value, True, color)
+                surface.blit(num_surf, num_surf.get_rect(center=(current_x + width // 2, center_pos[1])))
+            
+            current_x += width
+        
+        return total_width
 
     def get_level_best_score(self, level_key):
         scores_data = self.game_manager.game_data.get('scores', {})
@@ -405,19 +497,33 @@ class GameplayScreen(BaseScreen):
             eq_text = "= ?" if "=" in q_text else ""
             eq_surf = self.font_question.render(eq_text, True, COLOR_BLACK)
             
-            # 1. Tính toán kích thước nội dung câu hỏi
+            # 1. Tính toán kích thước nội dung câu hỏi bằng parser mới
+            components = self.parse_math_expression(math_part)
+            
             f_w = 0
             f_h = 0
-            if "/" in math_part:
-                temp_parts = math_part.split("/")
-                if len(temp_parts) >= 2:
-                    num_size = self.font_question.size(temp_parts[0].strip())
-                    den_size = self.font_question.size(temp_parts[1].strip())
-                    f_w = max(num_size[0], den_size[0]) + 20
-                    # Chiều cao = tử + mẫu + khoảng cách + gạch ngang
-                    f_h = num_size[1] + den_size[1] + 20 
             
-            if f_w == 0: 
+            # Tính tổng chiều rộng và chiều cao từ các thành phần
+            for comp_type, comp_value in components:
+                if comp_type == "fraction":
+                    parts = comp_value.split("/")
+                    if len(parts) >= 2:
+                        num_size = self.font_question.size(parts[0].strip())
+                        den_size = self.font_question.size(parts[1].strip())
+                        comp_w = max(num_size[0], den_size[0]) + 20
+                        comp_h = num_size[1] + den_size[1] + 20
+                    else:
+                        comp_w, comp_h = self.font_question.size(comp_value)
+                elif comp_type == "operator":
+                    comp_w, comp_h = self.font_question.size(f" {comp_value} ")
+                else:  # number
+                    comp_w, comp_h = self.font_question.size(comp_value)
+                
+                f_w += comp_w
+                f_h = max(f_h, comp_h)
+            
+            # Nếu không có thành phần nào, dùng logic cũ
+            if f_w == 0:
                 f_w = self.font_question.size(math_part)[0]
                 f_h = self.font_question.size(math_part)[1]
 
@@ -436,12 +542,17 @@ class GameplayScreen(BaseScreen):
             p_surf = self.font_question.render(f"Câu {self.current_question['question_number']}: {self.current_question['prefix']}", True, COLOR_BLACK)
             surface.blit(p_surf, p_surf.get_rect(center=(q_bg_rect.centerx, q_bg_rect.top + 45)))
 
-            # Vẽ phân số ở giữa vùng trống còn lại của khung
+            # Vẽ biểu thức toán học phức tạp ở giữa vùng trống còn lại của khung
             draw_y = q_bg_rect.top + (dynamic_q_height + 45) // 2
-            start_x_q = q_bg_rect.centerx - total_content_w // 2
-            self.draw_fraction(surface, math_part, (start_x_q + f_w // 2, draw_y), self.font_question, COLOR_BLACK)
+            
+            # Sử dụng hàm vẽ biểu thức mới
+            expr_center_x = q_bg_rect.centerx - (eq_surf.get_width() + 25) // 2
+            self.draw_math_expression(surface, math_part, (expr_center_x, draw_y), self.font_question, COLOR_BLACK)
+            
+            # Vẽ "= ?" 
             if eq_text:
-                surface.blit(eq_surf, eq_surf.get_rect(left=start_x_q + f_w + 20, centery=draw_y))
+                eq_x = expr_center_x + f_w // 2 + 20
+                surface.blit(eq_surf, eq_surf.get_rect(left=eq_x, centery=draw_y))
 
             # --- ĐÁP ÁN (TỰ ĐỘNG GIÃN CHIỀU RỘNG & CHIỀU CAO) ---
             for i, opt_text in enumerate(self.current_question["answers"]):
@@ -489,6 +600,7 @@ class GameplayScreen(BaseScreen):
                 label_surf = self.font_medium.render(f"{chr(65+i)}.", True, COLOR_BLACK)
                 surface.blit(label_surf, (rect.left + 25, rect.centery - label_surf.get_height() // 2))
                 self.draw_fraction(surface, opt_text, (rect.centerx + 15, rect.centery), self.font_medium, COLOR_BLACK)
+
 
         elif self.game_over:
             # Màn hình kết quả giữ nguyên

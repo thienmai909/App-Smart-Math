@@ -241,7 +241,7 @@ def get_level_5_questions(num_questions=20):
             num = random.randint(2, 15) * multiplier
             den = random.randint(2, 15) * multiplier
             frac = Fraction(num, den)
-            question_content = f"Rút gọn phân số: {num}/{den}"
+            question_content = f"{num}/{den} = ?"
             correct_str = f"{frac.numerator}/{frac.denominator}"
 
         elif type_q == "cong":
