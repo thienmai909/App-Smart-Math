@@ -307,7 +307,7 @@ class GameplayScreen(BaseScreen):
             assets['nut_next'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nut_next.png')).convert_alpha()
             assets['nut_next'] = pygame.transform.scale(assets['nut_next'], self.NEXT_BUTTON_SIZE)
             
-            star_img = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'sao.png')).convert_alpha() 
+            star_img = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'sao_ketthuc.png')).convert_alpha() 
             assets['sao_large'] = pygame.transform.scale(star_img, (self.STAR_SIZE, self.STAR_SIZE))
             assets['sao_result'] = pygame.transform.scale(star_img, (80, 80))
 
@@ -372,6 +372,7 @@ class GameplayScreen(BaseScreen):
             self.game_manager.question_index += 1
         else:
             self.game_over = True
+            self.best_score = self.score
             self.final_stars = self.calculate_stars(self.score)
             self.save_score(self.score)
 
@@ -625,7 +626,7 @@ class GameplayScreen(BaseScreen):
             res_img = None
             if self.is_perfect: res_img = self.assets['img_perfect']
             elif self.is_new_best: res_img = self.assets['img_new_best']
-            
+
             if res_img:
                 target_center_y = go_rect.centery
                 res_rect = res_img.get_rect(center=(SCREEN_WIDTH//2, target_center_y))
@@ -634,14 +635,18 @@ class GameplayScreen(BaseScreen):
             score_txt = self.font_title.render(f"{self.score}", True, (255, 0, 0))
             surface.blit(score_txt, score_txt.get_rect(center=(SCREEN_WIDTH//2, go_rect.centery)))
             
-            star_base_x = SCREEN_WIDTH // 2 - 90 
-            for i in range(1, 4):
-                single_star = self.assets['sao_result'].copy()
-                if i > self.final_stars:
-                    gray_filter = pygame.Surface(single_star.get_size(), pygame.SRCALPHA)
-                    gray_filter.fill((40, 40, 40, 190)) 
-                    single_star.blit(gray_filter, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-                surface.blit(single_star, (star_base_x + (i-1)*90 - 40, go_rect.centery + 80))
+            best_score_txt = self.font_title.render(f"{self.best_score}", True, (55, 55, 55))
+            surface.blit(best_score_txt, best_score_txt.get_rect(center=(SCREEN_WIDTH//2, go_rect.centery + 130)))
+
+            if not self.is_perfect or not self.is_new_best:
+                star_base_x = SCREEN_WIDTH // 2 - 90 
+                for i in range(1, 4):
+                    single_star = self.assets['sao_result'].copy()
+                    if i > self.final_stars:
+                        gray_filter = pygame.Surface(single_star.get_size(), pygame.SRCALPHA)
+                        gray_filter.fill((40, 40, 40, 190)) 
+                        single_star.blit(gray_filter, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+                    surface.blit(single_star, (star_base_x + (i-1)*90 - 40, go_rect.centery - 170))
 
             spacing = 50 
             total_width = self.NEXT_BUTTON_SIZE[0] + spacing + self.REPLAY_BUTTON_SIZE[0]
