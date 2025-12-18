@@ -197,9 +197,9 @@ class GameplayScreen(BaseScreen):
 
             try:
                 assets['img_new_best'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'new_best_score.png')).convert_alpha()
-                assets['img_new_best'] = pygame.transform.scale(assets['img_new_best'], (450, 120))
+                assets['img_new_best'] = pygame.transform.scale(assets['img_new_best'], (1200, 600))
                 assets['img_perfect'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'perfect_score.png')).convert_alpha()
-                assets['img_perfect'] = pygame.transform.scale(assets['img_perfect'], (500, 150))
+                assets['img_perfect'] = pygame.transform.scale(assets['img_perfect'], (1200, 600))
             except: pass
 
             assets['nutcaidat'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nutcaidat.png')).convert_alpha() 
@@ -227,7 +227,7 @@ class GameplayScreen(BaseScreen):
 
         except Exception as e:
             print(f"Lỗi tải Assets: {e}")
-            
+
         return assets
     
     def reset_game(self, keep_score=False):
@@ -494,7 +494,7 @@ class GameplayScreen(BaseScreen):
             # Màn hình kết quả giữ nguyên
             overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 200)); surface.blit(overlay, (0, 0))
-            go_rect = self.assets['game_over_image'].get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 50))
+            go_rect = self.assets['game_over_image'].get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2))
             surface.blit(self.assets['game_over_image'], go_rect)
             
             res_img = None
@@ -502,9 +502,9 @@ class GameplayScreen(BaseScreen):
             elif self.is_new_best: res_img = self.assets['img_new_best']
             
             if res_img:
-                res_rect = res_img.get_rect(center=(SCREEN_WIDTH//2, go_rect.top + 20))
-                offset_y = int(pygame.time.get_ticks() / 200) % 10
-                surface.blit(res_img, (res_rect.x, res_rect.y - 70 + offset_y))
+                target_center_y = go_rect.centery
+                res_rect = res_img.get_rect(center=(SCREEN_WIDTH//2, target_center_y))
+                surface.blit(res_img, (res_rect.x, res_rect.y))
 
             score_txt = self.font_title.render(f"{self.score}", True, (255, 0, 0))
             surface.blit(score_txt, score_txt.get_rect(center=(SCREEN_WIDTH//2, go_rect.centery)))
