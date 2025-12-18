@@ -232,7 +232,6 @@ def _create_fraction_options(correct_frac, num_options=4):
 def get_level_5_questions(num_questions=20):
     """Level 5: Phân số - rút gọn, cộng, trừ, nhân, chia"""
     questions = []
-    prefix = "Hãy thực hiện phép tính phân số:"
     for _ in range(num_questions):
         type_q = random.choice(["rutgon", "cong", "tru", "nhan", "chia"])
 
@@ -241,7 +240,7 @@ def get_level_5_questions(num_questions=20):
             num = random.randint(2, 15) * multiplier
             den = random.randint(2, 15) * multiplier
             frac = Fraction(num, den)
-            question_content = f"Rút gọn phân số: {num}/{den}"
+            question_content = f"{num}/{den} = ?"
             correct_str = f"{frac.numerator}/{frac.denominator}"
 
         elif type_q == "cong":
@@ -275,6 +274,11 @@ def get_level_5_questions(num_questions=20):
                 result = Fraction(random.randint(1, 10), random.randint(2, 10))
             question_content = f"{f1.numerator}/{f1.denominator} : {f2.numerator}/{f2.denominator} = ?"
             correct_str = f"{result.numerator}/{result.denominator}"
+
+        if type_q == "rutgon":
+            prefix = "Hãy rút gọn phân số sau:"
+        else:
+            prefix = "Hãy thực hiện phân số sau:"
 
         options = _create_fraction_options(Fraction(correct_str))
 
