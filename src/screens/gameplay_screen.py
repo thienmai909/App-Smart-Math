@@ -493,8 +493,21 @@ class GameplayScreen(BaseScreen):
         # --- CÂU HỎI (TỰ ĐỘNG GIÃN CHIỀU RỘNG & CHIỀU CAO) ---
         if not self.game_over and self.current_question:
             q_text = self.current_question["question"]
-            math_part = q_text.split("=")[0].strip() if "=" in q_text else q_text
-            eq_text = "= ?" if "=" in q_text else ""
+            
+            # LEVEL 4 và LEVEL 6 (tìm X) đã có dấu "=" trong câu hỏi, không cần thêm "= ?"
+            # Các level khác cần thêm "= ?" sau biểu thức
+            current_level = self.game_manager.current_level_key
+            is_find_x_level = current_level in ["LEVEL_4", "LEVEL_6"]
+            
+            if is_find_x_level:
+                # Hiển thị toàn bộ câu hỏi cho Level tìm X
+                math_part = q_text
+                eq_text = ""
+            else:
+                # Cắt phần sau "=" và thêm "= ?" cho các level khác
+                math_part = q_text.split("=")[0].strip() if "=" in q_text else q_text
+                eq_text = "= ?" if "=" in q_text else ""
+            
             eq_surf = self.font_question.render(eq_text, True, COLOR_BLACK)
             
             # 1. Tính toán kích thước nội dung câu hỏi bằng parser mới
