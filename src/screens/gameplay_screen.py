@@ -27,7 +27,7 @@ ACTION_BUTTON_SIZE = (40, 40)
 QUESTION_FONT_FILE = 'Nunito-ExtraBold.ttf' 
 QUESTION_FONT_PATH = os.path.join(ASSETS_FONT_DIR, QUESTION_FONT_FILE)
 
-SCORE_TIMER_FONT_FILE = 'Pacific.ttf'
+SCORE_TIMER_FONT_FILE = 'Pacifico-Regular.ttf'
 SCORE_TIMER_FONT_PATH = os.path.join(ASSETS_FONT_DIR, SCORE_TIMER_FONT_FILE)
 
 class GameplayScreen(BaseScreen):
@@ -54,7 +54,7 @@ class GameplayScreen(BaseScreen):
                 self.font_medium = pygame.font.Font(selected_font_path, FONT_SIZE_MEDIUM)
                 
                 if os.path.exists(SCORE_TIMER_FONT_PATH):
-                    self.font_score_timer = pygame.font.Font(SCORE_TIMER_FONT_PATH, FONT_SIZE_LARGE + 10) 
+                    self.font_score_timer = pygame.font.Font(SCORE_TIMER_FONT_PATH, FONT_SIZE_LARGE - 10) 
                 else:
                     self.font_score_timer = self.font_large 
                 
@@ -299,7 +299,7 @@ class GameplayScreen(BaseScreen):
 
             try:
                 assets['khung_time'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'khung_time.png')).convert_alpha()
-                assets['khung_time'] = pygame.transform.scale(assets['khung_time'], (140, 50))
+                assets['khung_time'] = pygame.transform.scale(assets['khung_time'], (80, 60))
             except:
                 assets['khung_time'] = pygame.Surface((140, 50), pygame.SRCALPHA)
                 pygame.draw.rect(assets['khung_time'], (255, 255, 255, 100), assets['khung_time'].get_rect(), border_radius=10)
@@ -449,10 +449,11 @@ class GameplayScreen(BaseScreen):
         
         # --- TOP BAR ---
         surface.blit(self.assets['nutcaidat'], self.settings_button_rect.topleft)
-        time_frame_rect = self.assets['khung_time'].get_rect(right=self.settings_button_rect.left - 10, centery=self.settings_button_rect.centery)
+        time_frame_rect = self.assets['khung_time'].get_rect(right=self.settings_button_rect.left, centery=self.settings_button_rect.centery)
         surface.blit(self.assets['khung_time'], time_frame_rect.topleft)
         timer_text_content = self.font_score_timer.render(f"{self.time_left}", True, COLOR_ACCENT) 
-        surface.blit(timer_text_content, timer_text_content.get_rect(center=time_frame_rect.center))
+        surface.blit(timer_text_content, timer_text_content.get_rect(center=(time_frame_rect.x + 40, time_frame_rect.y + 25)))
+        # surface.blit(timer_text_content, timer_text_content.get_rect(center=time_frame_rect.center))
 
         # --- THANH TIẾN ĐỘ ---
         progress_bar_bg = self.assets['thanh_sao_0']
@@ -658,6 +659,10 @@ class GameplayScreen(BaseScreen):
 
             self.replay_button_rect.topleft = (start_x + self.NEXT_BUTTON_SIZE[0] + spacing, button_y - 10)
             surface.blit(self.assets['nut_relay'], self.replay_button_rect.topleft)
+
+            # Vẽ lại nút cài đặt
+            surface.blit(self.assets['nutcaidat'], self.settings_button_rect.topleft)
+
 
         if hasattr(self.game_manager, 'menu') and self.game_manager.menu.show_settings:
             self.game_manager.menu.draw(surface)
