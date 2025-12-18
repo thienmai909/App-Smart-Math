@@ -553,10 +553,10 @@ class GameplayScreen(BaseScreen):
             
             # Vẽ tiêu đề "Câu X: ..."
             p_surf = self.font_question.render(f"Câu {self.current_question['question_number']}: {self.current_question['prefix']}", True, COLOR_BLACK)
-            surface.blit(p_surf, p_surf.get_rect(center=(q_bg_rect.centerx, q_bg_rect.top + 45)))
+            surface.blit(p_surf, p_surf.get_rect(center=(q_bg_rect.centerx, q_bg_rect.top + 65)))
 
             # Vẽ biểu thức toán học phức tạp ở giữa vùng trống còn lại của khung
-            draw_y = q_bg_rect.top + (dynamic_q_height + 45) // 2
+            draw_y = q_bg_rect.top + (dynamic_q_height + 45) // 2 + 20
             
             # Sử dụng hàm vẽ biểu thức mới
             expr_center_x = q_bg_rect.centerx - (eq_surf.get_width() + 25) // 2
@@ -577,8 +577,8 @@ class GameplayScreen(BaseScreen):
                     if len(opt_parts) >= 2:
                         num_size_ans = self.font_medium.size(opt_parts[0].strip())
                         den_size_ans = self.font_medium.size(opt_parts[1].strip())
-                        opt_w = max(num_size_ans[0], den_size_ans[0]) + 15
-                        opt_h = num_size_ans[1] + den_size_ans[1] + 15
+                        opt_w = max(num_size_ans[0], den_size_ans[0])
+                        opt_h = num_size_ans[1] + den_size_ans[1]
                 
                 if opt_w == 0: 
                     opt_w = self.font_medium.size(opt_text)[0]
@@ -586,12 +586,12 @@ class GameplayScreen(BaseScreen):
 
                 # 2. Điều chỉnh kích thước nút đáp án (Min 350x80)
                 dynamic_ans_width = max(350, opt_w + 100)
-                dynamic_ans_height = max(80, opt_h + 30)
+                dynamic_ans_height = max(80, opt_h + 20)
                 
                 pos_x = SCREEN_WIDTH // 2 + (-255 if i % 2 == 0 else 255)
                 # Tăng khoảng cách Y nếu các nút quá cao để tránh đè nhau
                 y_offset = (i // 2) * max(self.answer_spacing, dynamic_ans_height + 20)
-                pos_y = self.answer_start_y + y_offset
+                pos_y = self.answer_start_y + y_offset + 30
                 
                 rect = pygame.Rect(0, 0, int(dynamic_ans_width), int(dynamic_ans_height))
                 rect.center = (pos_x, pos_y)
@@ -646,7 +646,7 @@ class GameplayScreen(BaseScreen):
             spacing = 50 
             total_width = self.NEXT_BUTTON_SIZE[0] + spacing + self.REPLAY_BUTTON_SIZE[0]
             start_x = (SCREEN_WIDTH - total_width) // 2
-            button_y = SCREEN_HEIGHT - 150
+            button_y = SCREEN_HEIGHT - 100
 
             self.next_button_rect.topleft = (start_x, button_y)
             surface.blit(self.assets['nut_next'], self.next_button_rect.topleft)
