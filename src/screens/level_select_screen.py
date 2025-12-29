@@ -1,6 +1,7 @@
 import pygame
 import os
 from src.screens.base_screen import BaseScreen
+from src.effects import HoverEffect
 from src.config import *
 
 LEVELS = [
@@ -65,8 +66,14 @@ class LevelSelectScreen(BaseScreen):
         self.home_rect = pygame.Rect(self.settings_rect.x + 50, self.settings_rect.y + 280, 300, 50)
         self.replay_rect = pygame.Rect(self.settings_rect.x + 50, self.settings_rect.y + 360, 300, 50)
         self.sound_on = True 
-        self.bgm_on = True 
-        
+        self.bgm_on = True
+
+        # Hiệu ứng nút chọn level
+        self.level_hover_effects = [
+            HoverEffect(scale_factor=1.08, duration=0.15) 
+            for _ in range(6)
+        ]
+
     def _load_assets(self):
         assets = {}
         try:
@@ -184,7 +191,15 @@ class LevelSelectScreen(BaseScreen):
         # Logic cập nhật âm thanh khi pop-up settings mở
         if self.game_manager.menu.show_settings:
              self.game_manager.menu.update()
-                  
+            
+        # Update cho hiệu ứng hover - chỉ khi level_rects đã được populate
+        if len(self.level_rects) == 6:  # Đảm bảo đã có đủ 6 level rects
+            dt = 1.0 / 120  # Hoặc tính từ clock
+            mouse_pos = pygame.mouse.get_pos()
+
+            for i, hover_fx in enumerate(self.level_hover_effects):
+                is_hovering = self.level_rects[i]['rect'].collidepoint(mouse_pos)
+                hover_fx.update(is_hovering, dt)
             
     def draw(self, surface):
         if surface is None:
@@ -231,12 +246,27 @@ class LevelSelectScreen(BaseScreen):
             # Level 1 (i=0) luôn mở
             is_locked = (i > 0 and stars_data[i-1] == 0)
 
-            # Vẽ hình ảnh nút level
+            # Vẽ hình ảnh nút level với hover effect
             level_image = self.assets.get(level['image_key'])
             if level_image:
-                # Nếu không bị khóa, vẽ level bình thường
-                surface.blit(level_image, button_rect.topleft)
-            
+                # Lấy hover effect và scale image
+                hover_fx = self.level_hover_effects[i]
+                scaled_rect = hover_fx.get_scaled_rect(button_rect)
+                scaled_image = hover_fx.scale_surface(level_image)
+                
+                # Vẽ scaled image
+                surface.blit(scaled_image, scaled_rect)
+
+            # Vẽ khóa nếu level bị khóa
+            if is_locked and self.assets.get('khoalv'):
+                hover_fx = self.level_hover_effects[i]
+                khoa_asset = self.assets['khoalv']
+                scaled_rect = hover_fx.get_scaled_rect(button_rect)
+                scaled_image = hover_fx.scale_surface(khoa_asset)
+
+                # Căn giữa icon khóa trong nút level
+                surface.blit(scaled_image, (scaled_rect.x, scaled_rect.y - 24))
+
             # --- VẼ SAO ---
             current_stars_level = stars_data[i]
             star_asset = self.assets.get('star_icon')
@@ -251,12 +281,7 @@ class LevelSelectScreen(BaseScreen):
                     star_x = start_star_x + star_index * (star_size + star_spacing)
                     surface.blit(star_asset, (star_x, star_y))
             
-            # Vẽ khóa nếu level bị khóa
-            if is_locked and self.assets.get('khoalv'):
-                khoa_asset = self.assets['khoalv']
-                # Căn giữa icon khóa trong nút level
-                khoa_rect = khoa_asset.get_rect(center=button_rect.center)
-                surface.blit(khoa_asset, khoa_rect.topleft)
+            
     
         #  VẼ POP-UP CÀI ĐẶT nếu show_settings = True
         if self.game_manager.menu.show_settings:
