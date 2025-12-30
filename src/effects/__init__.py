@@ -16,6 +16,7 @@ from .animation_utils import ease_in_out, ease_out_bounce, ease_out_elastic, ler
 from .transitions import FadeTransition, SlideTransition, ZoomTransition
 from .button_effects import HoverEffect, ClickRippleEffect, GlowEffect
 from .progress_effects import ProgressBarFillEffect, StarPopEffect
+from .effect_manager import EffectManager, init_effect_manager, get_effect_manager
 
 __all__ = [
     # Base
@@ -41,6 +42,11 @@ __all__ = [
     # Progress Effects
     'ProgressBarFillEffect', 
     'StarPopEffect',
+    
+    # Effect Manager
+    'EffectManager',
+    'init_effect_manager',
+    'get_effect_manager',
 ]
 
 __version__ = '1.0.0'
