@@ -181,10 +181,9 @@ class LevelSelectScreen(BaseScreen):
                         print(f"Bạn đã chọn: {self.game_manager.current_level_key}")
                         
                         # Chuyển sang màn hình chơi game
-                        self.game_manager.effect_manager.fade_transition(
+                        self.game_manager.effect_manager.fade_to_black(
                             callback=lambda: self.game_manager.switch_screen("GAMEPLAY"),
-                            fade_out_duration=0.3,
-                            fade_in_duration=0.3
+                            duration=0.5,
                         )
                         return
                     else:
