@@ -38,8 +38,8 @@ class HomeScreen(BaseScreen):
                 self.game_manager.sounds['click'].play()
                 self.game_manager.effect_manager.fade_transition(
                     callback=lambda: self.game_manager.switch_screen("LEVEL"),
-                    fade_out_duration=0.3,
-                    fade_in_duration=0.3
+                    fade_out_duration=0.2,
+                    fade_in_duration=0.2
                 )
 
     def update(self):

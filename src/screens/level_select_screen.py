@@ -183,7 +183,7 @@ class LevelSelectScreen(BaseScreen):
                         # Chuyển sang màn hình chơi game
                         self.game_manager.effect_manager.fade_to_black(
                             callback=lambda: self.game_manager.switch_screen("GAMEPLAY"),
-                            duration=0.5,
+                            duration=0.3,
                         )
                         return
                     else:

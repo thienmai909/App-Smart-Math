@@ -17,6 +17,7 @@ from .transitions import FadeTransition, SlideTransition, ZoomTransition
 from .button_effects import HoverEffect, ClickRippleEffect, GlowEffect
 from .progress_effects import ProgressBarFillEffect, StarPopEffect
 from .effect_manager import EffectManager, init_effect_manager, get_effect_manager
+from .gif_animation import GifAnimation
 
 __all__ = [
     # Base
@@ -47,6 +48,9 @@ __all__ = [
     'EffectManager',
     'init_effect_manager',
     'get_effect_manager',
+    
+    # GIF Animation
+    'GifAnimation',
 ]
 
 __version__ = '1.0.0'
