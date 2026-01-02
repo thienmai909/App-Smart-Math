@@ -1,7 +1,27 @@
 # BÁO CÁO DỰ ÁN: SMART MATH - ỨNG DỤNG HỌC TOÁN THÔNG MINH
 
 ---
+# HƯỚNG DẪN CHẠY DỰ ÁN SMART MATH
+### Tải dự án
+```
+git clone https://github.com/thienmai909/Du-an-phan-mem-hoc-tap-Smart-Math.git
+```
+### Tại thư mục gốc của dự án, chạy lệnh:
 
+```bash
+cd Du-an-phan-mem-hoc-tap-Smart-Math
+pip install -r requirements.txt
+python main.py
+```
+
+Hoặc:
+
+```bash
+cd Du-an-phan-mem-hoc-tap-Smart-Math
+pip3 install -r requirements.txt
+python3 main.py
+```
+---
 ## 1. GIỚI THIỆU VẤN ĐỀ
 
 ### 1.1. Bối cảnh
