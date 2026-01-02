@@ -353,6 +353,11 @@ class GameplayScreen(BaseScreen):
         
         self.game_manager.question_index = 0 
         
+        # Reset GIF animations
+        if self.current_gif_animation:
+            self.current_gif_animation.stop()
+            self.current_gif_animation = None
+        
         if hasattr(self.game_manager, 'menu'):
             self.game_manager.menu.show_settings = False
 
@@ -397,19 +402,22 @@ class GameplayScreen(BaseScreen):
             self.final_stars = self.calculate_stars(self.score)
             self.save_score(self.score)
             
-            # Lazy load GIFs lần đầu khi cần
+            # Load GIF đồng bộ để đảm bảo sẵn sàng ngay
             if not self.gifs_loaded:
-                self._load_gifs()
+                self._load_gifs(force_sync=True)
             
-            # Bắt đầu GIF animation dựa trên kết quả
+            # Đơn giản hóa logic: chọn GIF trước, sau đó play
+            gif_to_play = None
             if self.is_perfect or self.is_new_best:
-                if self.victory_gif and self.victory_gif.is_loaded:
-                    self.victory_gif.play()
-                    self.current_gif_animation = self.victory_gif
+                gif_to_play = self.victory_gif
             else:
-                if self.defeat_gif and self.defeat_gif.is_loaded:
-                    self.defeat_gif.play()
-                    self.current_gif_animation = self.defeat_gif
+                gif_to_play = self.defeat_gif
+            
+            if gif_to_play and gif_to_play.is_loaded:
+                gif_to_play.play()
+                self.current_gif_animation = gif_to_play
+            else:
+                print(f"Warning: GIF not loaded - is_perfect={self.is_perfect}, is_new_best={self.is_new_best}")
 
     def process_answer(self, selected_index):
         if selected_index >= 0 and self.game_manager.sounds:
@@ -435,23 +443,47 @@ class GameplayScreen(BaseScreen):
             if self.game_manager.menu.sound_setting:
                 self.game_manager.sounds[key].play()
 
-    def _load_gifs(self):
-        """Lazy load GIF animations khi cần (tránh delay khởi động)."""
+    def _load_gifs(self, force_sync=False):
+        """
+        Load GIF animations.
+        
+        Args:
+            force_sync (bool): 
+                - False: Load async (background thread, không block game)
+                - True: Load sync (blocking, đảm bảo sẵn sàng ngay)
+        """
         try:
-            # Tạo GIF objects không auto-load
             if os.path.exists(self.victory_gif_path):
-                self.victory_gif = GifAnimation(self.victory_gif_path, duration=2.0, scale_size=(400, 400), auto_load=False)
-                self.victory_gif.load_async()  # Load trong background
+                self.victory_gif = GifAnimation(
+                    self.victory_gif_path, 
+                    duration=2.0, 
+                    scale_size=(600, 400), 
+                    auto_load=force_sync,  # True = sync, False = async
+                    auto_clear=True
+                )
+                if not force_sync:
+                    self.victory_gif.load_async()  # Load async nếu không force_sync
             
             if os.path.exists(self.defeat_gif_path):
-                self.defeat_gif = GifAnimation(self.defeat_gif_path, duration=2.0, scale_size=(400, 400), auto_load=False)
-                self.defeat_gif.load_async()  # Load trong background
+                self.defeat_gif = GifAnimation(
+                    self.defeat_gif_path, 
+                    duration=2.0, 
+                    scale_size=(600, 400), 
+                    auto_load=force_sync,  # True = sync, False = async
+                    auto_clear=True
+                )
+                if not force_sync:
+                    self.defeat_gif.load_async()  # Load async nếu không force_sync
             
             self.gifs_loaded = True
-            print("GIFs loading asynchronously...")
+            
+            if force_sync:
+                print("GIFs loaded synchronously")
+            else:
+                print("GIFs loading asynchronously...")
         except Exception as e:
             print(f"Error loading GIFs: {e}")
-            self.gifs_loaded = True  # Đánh dấu đã thử load để không retry
+            self.gifs_loaded = True
     
     def update(self):
         # Tính dt ở đầu để dùng cho toàn bộ update
@@ -750,7 +782,7 @@ class GameplayScreen(BaseScreen):
             # Vẽ GIF animation lên trên cùng
             if self.current_gif_animation and self.current_gif_animation.is_playing:
                 # Vẽ GIF ở giữa màn hình, phía trên
-                gif_pos = (SCREEN_WIDTH // 2, 200)
+                gif_pos = (SCREEN_WIDTH // 2, 300)
                 self.current_gif_animation.draw(surface, gif_pos, center=True)
 
 

@@ -26,17 +26,19 @@ class GifAnimation:
                 gif.draw(surface, (x, y))
     """
     
-    def __init__(self, gif_path, duration=2.0, scale_size=None, auto_load=True):
+    def __init__(self, gif_path, duration=2.0, scale_size=None, auto_load=True, auto_clear=False):
         """
         Args:
             gif_path (str): Đường dẫn đến file GIF
             duration (float): Thời gian phát (giây), None = lặp vô hạn
             scale_size (tuple): Kích thước scale (width, height), None = giữ nguyên
             auto_load (bool): Tự động load đồng bộ (True) hoặc đợi load_async() (False)
+            auto_clear (bool): Tự động giải phóng frames sau khi play xong (tiết kiệm RAM)
         """
         self.gif_path = gif_path
         self.duration = duration
         self.scale_size = scale_size
+        self.auto_clear = auto_clear
         
         self.frames = []
         self.frame_durations = []
@@ -179,6 +181,9 @@ class GifAnimation:
         # Kiểm tra duration
         if self.duration is not None and self.total_elapsed >= self.duration:
             self.is_playing = False
+            # Tự động giải phóng frames nếu auto_clear=True
+            if self.auto_clear:
+                self.clear_frames()
             return
         
         # Chuyển frame
@@ -217,3 +222,16 @@ class GifAnimation:
         if not self.frames:
             return None
         return self.frames[self.current_frame_index]
+    
+    def clear_frames(self):
+        """
+        Giải phóng frames khỏi RAM để tiết kiệm memory.
+        Hữu ích khi GIF đã phát xong và không cần nữa.
+        """
+        num_frames = len(self.frames)
+        self.frames.clear()
+        self.frame_durations.clear()
+        self.is_loaded = False
+        self.is_playing = False
+        if num_frames > 0:
+            print(f"Cleared {num_frames} GIF frames from memory")
