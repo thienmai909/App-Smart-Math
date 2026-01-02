@@ -1655,9 +1655,3 @@ Mỗi frame (~120 FPS):
 - Bảng xếp hạng trực tuyến
 - Thêm level 7-10 (logarit, hình học, ...)
 - Animation hiệu ứng đẹp hơn
-
----
-
-**Nhóm phát triển**: Nhóm 15 
-**Ngày hoàn thành**: 3/1/2026  
-**Công nghệ**: Python 3.x + Pygame 2.x
