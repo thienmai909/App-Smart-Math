@@ -29,15 +29,86 @@ Trong thời đại công nghệ 4.0, việc ứng dụng công nghệ vào giá
 
 ### 1.4. Công nghệ sử dụng
 
-| Công nghệ | Mục đích sử dụng |
-|-----------|------------------|
-| **Python 3.x** | Ngôn ngữ lập trình chính |
-| **Pygame** | Framework phát triển game 2D |
-| **JSON** | Lưu trữ dữ liệu điểm số và tiến trình |
-| **Fractions Library** | Xử lý phân số trong Level 5-6 |
+| Công nghệ | Phiên bản | Mục đích sử dụng |
+|-----------|-----------|------------------|
+| **Python** | 3.x | Ngôn ngữ lập trình chính |
+| **Pygame** | 2.x | Framework phát triển game 2D, xử lý đồ họa và âm thanh |
+| **Pillow** | 10.x | Xử lý và render ảnh GIF animation |
+| **JSON** | Built-in | Lưu trữ dữ liệu điểm số và tiến trình (save.json) |
+| **Fractions** | Built-in | Xử lý phân số trong Level 5-6 (tự động rút gọn) |
+| **Random** | Built-in | Tạo câu hỏi ngẫu nhiên và trộn đáp án |
+| **Time** | Built-in | Quản lý bộ đếm thời gian realtime |
+| **OS** | Built-in | Xử lý đường dẫn file cross-platform |
+| **Math** | Built-in | Tính toán GCD (Greatest Common Divisor) |
+
+### 1.5. Cấu trúc dự án
+
+```
+Du-an-phan-mem-hoc-tap-Smart-Math/
+│
+├── 📄 main.py                       # File khởi chạy chính
+├── 📄 requirements.txt              # Danh sách thư viện (pygame, Pillow)
+├── 📄 README.md                     # Báo cáo dự án
+│
+├── 📁 src/                          # Mã nguồn chính
+│   ├── 📄 config.py                 # Cấu hình toàn cục
+│   │
+│   ├── 📁 core/                     # Lõi xử lý game
+│   │   ├── game_manager.py          # Bộ não điều khiển game (67 dòng)
+│   │   └── load_sounds.py           # Load âm thanh
+│   │
+│   ├── 📁 screens/                  # Các màn hình
+│   │   ├── base_screen.py           # Lớp cơ sở
+│   │   ├── home_screen.py           # Màn hình chào mừng
+│   │   ├── level_select_screen.py  # Màn chọn level (263 dòng)
+│   │   ├── gameplay_screen.py       # Màn chơi chính (668 dòng)
+│   │   └── menu_screen.py           # Popup cài đặt (157 dòng)
+│   │
+│   └── 📁 effects/                  # Hiệu ứng đồ họa (9 files)
+│       ├── animation_utils.py       # Tiện ích animation
+│       ├── base_effect.py           # Lớp cơ sở effect
+│       ├── button_effects.py        # Hiệu ứng nút bấm
+│       ├── effect_manager.py        # Quản lý effects
+│       ├── gif_animation.py         # Xử lý GIF animation
+│       ├── progress_effects.py      # Hiệu ứng thanh tiến độ
+│       └── transitions.py           # Chuyển cảnh
+│
+├── 📁 data/                         # Dữ liệu game
+│   ├── questions.py                 # Generator câu hỏi 6 level (391 dòng)
+│   ├── save_manager.py              # Lưu/tải JSON (35 dòng)
+│   └── save.json                    # File lưu điểm (tự động tạo)
+│
+└── 📁 assets/                       # Tài nguyên
+    ├── 📁 fonts/                    # 4 font chữ
+    ├── 📁 images/                   # 40 hình ảnh PNG/GIF
+    └── 📁 sounds/                   # 4 file âm thanh MP3
+```
+
+**Thống kê:**
+- **Tổng số file Python**: 19 files (~1,581 dòng code chính)
+- **Tổng tài nguyên**: 48 files (4 fonts + 40 images + 4 sounds)
+- **File phức tạp nhất**: `gameplay_screen.py` (668 dòng)
 ---
 
 ## 2. CÁC MODULE CHÍNH
+
+Dự án được tổ chức thành 9 module chính, mỗi module đảm nhiệm một chức năng cụ thể:
+
+| Module | File | Dòng code | Chức năng chính |
+|--------|------|-----------|-----------------|
+| **Game Manager** | `src/core/game_manager.py` | 67 | Bộ não điều khiển toàn bộ luồng game, quản lý chuyển màn hình |
+| **Effect Manager** | `src/effects/effect_manager.py` | 439 | Quản lý hiệu ứng chuyển cảnh (fade, slide, zoom transitions) |
+| **Questions Generator** | `data/questions.py` | 391 | Tạo câu hỏi ngẫu nhiên cho 6 cấp độ |
+| **Gameplay Screen** | `src/screens/gameplay_screen.py` | 668 | Màn hình chơi chính - phức tạp nhất trong dự án |
+| **Level Select Screen** | `src/screens/level_select_screen.py` | 263 | Màn hình chọn level với logic khóa |
+| **Home Screen** | `src/screens/home_screen.py` | 54 | Màn hình chào mừng với nút bắt đầu |
+| **Menu Screen** | `src/screens/menu_screen.py` | 157 | Popup cài đặt overlay (không phải màn hình độc lập) |
+| **Save Manager** | `data/save_manager.py` | 35 | Lưu và tải dữ liệu JSON |
+| **Load Sounds** | `src/core/load_sounds.py` | 17 | Load âm thanh vào bộ nhớ (click, yes, no, bgm) |
+
+**Tổng cộng**: ~2,091 dòng code logic chính
+
+---
 
 ### 2.1. Module Game Manager (`src/core/game_manager.py`)
 
@@ -1174,6 +1245,286 @@ level_1_high_score = level_1_data['high_score']  # 190
 ```
 
 ---
+### 2.7. Module Home Screen (`src/screens/home_screen.py`)
+
+**Vai trò**: Màn hình chào mừng - 54 dòng code, điểm khởi đầu của game
+
+#### 2.7.1. Khởi tạo màn hình
+
+```python
+class HomeScreen(BaseScreen):
+    def __init__(self, game_manager):
+        super().__init__(game_manager)
+        
+        # KHAI BÁO CÁC RECT TẠM THỜI 
+        self.start_button_rect = pygame.Rect(0, 0, 1, 1)
+        self.assets = self._load_assets()
+        
+        # CĂN CHỈNH VỊ TRÍ NÚT PLAY CUỐI CÙNG
+        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 180)
+```
+
+**Giải thích**:
+- `start_button_rect`: Rect tạm thời (0, 0, 1, 1), được resize sau khi load ảnh
+- Vị trí nút: Căn giữa màn hình, d dịch xuống 180px
+
+#### 2.7.2. Load assets với fallback
+
+```python
+def _load_assets(self):
+    assets = {}
+    try:
+        assets['nen_home'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'giaodiendautien.png')).convert_alpha()
+        assets['nen_home'] = pygame.transform.scale(assets['nen_home'], (SCREEN_WIDTH, SCREEN_HEIGHT))     
+        assets['nutbatdau'] = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'nutbatdau.png')).convert_alpha()
+        assets['nutbatdau'] = pygame.transform.scale(assets['nutbatdau'], (250, 50)) 
+        self.start_button_rect.size = assets['nutbatdau'].get_size() 
+        
+    except pygame.error as e:
+        print(f"Lỗi tải hình ảnh Home: {e}. Vui lòng kiểm tra file ảnh.")
+        # Fallback: Tạo surface màu đơn giản
+        assets['nen_home'] = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        assets['nen_home'].fill(COLOR_BG)
+        assets['nutbatdau'] = pygame.Surface((250, 50))
+        assets['nutbatdau'].fill(COLOR_CORRECT)
+        
+    return assets
+```
+
+**Điểm nổi bật**:
+- Automatic fallback: Nếu load file ảnh lỗi, tạo surface màu đơn giản
+- Scale tự động: Nền fit toàn màn hình (1200×600)
+- Nút resize: 250×50 pixels
+
+#### 2.7.3. Xử lý click với fade transition
+
+```python
+def handle_input(self, event):
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        mouse_pos = event.pos
+        
+        if self.start_button_rect.collidepoint(mouse_pos):
+            # Phát âm click
+            self.game_manager.sounds['click'].play()
+            
+            # Fade transition sang Level Select
+            self.game_manager.effect_manager.fade_transition(
+                callback=lambda: self.game_manager.switch_screen("LEVEL"),
+                fade_out_duration=0.2,
+                fade_in_duration=0.2
+            )
+```
+
+**Giải thích**:
+- Kiểm tra collision: `collidepoint(mouse_pos)`
+- Effect Manager: Gọi `fade_transition()` với callback
+- Callback: `lambda: self.game_manager.switch_screen("LEVEL")` - chuyển màn
+- Duration: 0.2s fade out + 0.2s fade in = 0.4s total
+
+---
+
+### 2.8. Module Effect Manager (`src/effects/effect_manager.py`)
+
+**Vai trò**: Quản lý hiệu ứng chuyển cảnh - 439 dòng code, Singleton pattern
+
+#### 2.8.1. Khởi tạo Effect Manager (Singleton)
+
+```python
+class EffectManager:
+    """Singleton Effect Manager - Quản lý tất cả transitions và effects."""
+    _instance = None
+    
+    def __init__(self, screen_size=(1200, 600)):
+        self.screen_size = screen_size
+        self.screen_width, self.screen_height = screen_size
+        
+        # Transition hiện tại
+        self.current_transition = None
+        self.transition_callback = None
+        
+        # Danh sách pending callbacks
+        self.pending_callbacks = []
+```
+
+**Giải thích Singleton**:
+- `_instance`: Class variable lưu instance duy nhất
+- `get_instance()`: Tạo hoặc trả về instance duy nhất
+- Tại sao Singleton? Chỉ 1 effect manager cho toàn bộ game
+
+#### 2.8.2. Fade Transition - Chuyển cảnh mượt mà
+
+```python
+def fade_transition(self, 
+                   callback: Optional[Callable] = None,
+                   fade_out_duration: Optional[float] = None,
+                   fade_in_duration: Optional[float] = None,
+                   color: Tuple[int, int, int] = (0, 0, 0)):
+    """
+    Full fade transition: fade out -> callback -> fade in.
+    
+    Tự động xử lý fade out, gọi callback (chuyển màn), rồi fade in.
+    """
+    
+    fade_out_dur = fade_out_duration if fade_out_duration is not None else 0.3
+    fade_in_dur = fade_in_duration if fade_in_duration is not None else 0.3
+    
+    # Tạo fade transition
+    self.current_transition = FadeTransition(
+        screen_size=self.screen_size,
+        fade_in=False,  # Bắt đầu với fade out
+        duration=fade_out_dur,
+        color=color
+    )
+    
+    # Lưu callback để gọi sau fade out
+    if callback:
+        self.pending_callbacks.append({
+            'callback': callback,
+            'fade_in_duration': fade_in_dur,
+            'color': color  
+        })
+```
+
+**Điểm quan trọng**:
+- 3 giai đoạn: Fade out (tối dần) → Callback (chuyển màn) → Fade in (sáng dần)
+- `pending_callbacks`: Queue chứa callback chờ thực thi
+- Default duration: 0.3s mỗi phase
+
+#### 2.8.3. Slide Transition - Trượt màn hình
+
+```python
+def slide_screen(self, direction: str = "left", 
+                callback: Optional[Callable] = None,
+                duration: Optional[float] = None):
+    """
+    Slide transition - màn hình mới trượt vào.
+    
+    Args:
+        direction (str): "left", "right", "up", "down"
+        callback (Callable): Hàm gọi ngay khi bắt đầu slide (để switch screen)
+        duration (float): Thời gian slide (mặc định 0.5)
+    """
+    
+    duration = duration if duration is not None else 0.5
+    
+    # Gọi callback NGAY (để switch screen trước khi slide)
+    if callback:
+        callback()
+    
+    # Tạo slide transition
+    self.current_transition = SlideTransition(
+        screen_size=self.screen_size,
+        direction=direction,
+        duration=duration
+    )
+```
+
+**Giải thích**:
+- Callback được gọi TRƯỚC khi slide (khác với fade)
+- Direction: 4 hướng (left/right/up/down)
+- Màn hình mới "trượt" vào từ hướng chỉ định
+
+#### 2.8.4. Update và Draw loop
+
+```python
+def update(self, dt: float):
+    """
+    Update transition hiện tại.
+    
+    Args:
+        dt (float): Delta time (giây)
+    """
+    if self.current_transition:
+        self.current_transition.update(dt)
+        
+        # Nếu transition kết thúc
+        if self.current_transition.is_done():
+            # Xử lý pending callbacks (cho fade transition)
+            if self.pending_callbacks:
+                cb_data = self.pending_callbacks.pop(0)
+                cb_data['callback']()  # Gọi callback (switch screen)
+                
+                # Bắt đầu fade in
+                self.current_transition = FadeTransition(
+                    screen_size=self.screen_size,
+                    fade_in=True,
+                    duration=cb_data['fade_in_duration'],
+                    color=cb_data['color']
+                )
+            else:
+                self.current_transition = None
+
+def draw(self, surface: pygame.Surface):
+    """Vẽ transition lên màn hình."""
+    if self.current_transition:
+        self.current_transition.draw(surface)
+```
+
+**Workflow fade transition**:
+1. **Frame 0**: Bắt đầu fade out
+2. **Frame N**: Fade out xong → Gọi callback (switch screen) → Bắt đầu fade in
+3. **Frame M**: Fade in xong → Clear transition
+
+---
+
+### 2.9. Module Load Sounds (`src/core/load_sounds.py`)
+
+**Vai trò**: Load âm thanh vào bộ nhớ - 17 dòng code, khởi tạo audio system
+
+#### 2.9.1. Khởi tạo Pygame Mixer
+
+```python
+import pygame
+import os
+from src.config import *
+
+pygame.mixer.init()
+# Nhạc nền
+pygame.mixer.music.load(os.path.join(ASSETS_SOUND_DIR, "nhacnen.mp3"))
+```
+
+**Giải thích**:
+- `pygame.mixer.init()`: Khởi tạo audio system
+- `pygame.mixer.music`: Kênh riêng cho nhạc nền (chỉ 1 track duy nhất)
+- Load nhạc nền: `nhacnen.mp3` (không phát ngay, phát ở GameManager)
+
+#### 2.9.2. Load Sound Effects
+
+```python
+def _load_sound():
+    sounds = {}
+    sounds['click'] = pygame.mixer.Sound(os.path.join(ASSETS_SOUND_DIR, "click_dapan.wav"))
+    sounds['no'] = pygame.mixer.Sound(os.path.join(ASSETS_SOUND_DIR, "no.mp3"))
+    sounds['yes'] = pygame.mixer.Sound(os.path.join(ASSETS_SOUND_DIR, "yes.mp3"))
+    
+    return sounds
+```
+
+**Giải thích**:
+- `pygame.mixer.Sound`: Kênh cho sound effects (phát đồng thời được nhiều sound)
+- 3 sound effects:
+  - `click`: Âm click nút (WAV format - latency thấp)
+  - `yes`: Âm xác nhận đúng
+  - `no`: Âm xác nhận sai
+- Trả về dictionary để truy cập: `sounds['click'].play()`
+
+#### 2.9.3. Sử dụng trong GameManager
+
+```python
+class GameManager:
+    sounds = _load_sound()  # Load sounds ở class level
+    
+    def __init__(self):
+        # ...
+        pygame.mixer.music.play(loops=-1)  # Phát nhạc nền lặp vô hạn
+```
+
+**Điểm nổi bật**:
+- Load ở class level: Chỉ load 1 lần cho toàn bộ game
+- `loops=-1`: Phát nhạc nền lặp vô hạn
+- Các screen khác truy cập: `self.game_manager.sounds['click'].play()`
+
+---
 
 ## 3. LUỒNG HOẠT ĐỘNG CHI TIẾT
 
@@ -1287,6 +1638,6 @@ Mỗi frame (~120 FPS):
 
 ---
 
-**Nhóm phát triển**: ......  
-**Ngày hoàn thành**: 27/12/2024  
+**Nhóm phát triển**: Nhóm 15
+**Ngày hoàn thành**: 3/1/2026  
 **Công nghệ**: Python 3.x + Pygame 2.x
