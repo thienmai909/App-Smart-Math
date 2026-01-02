@@ -1638,6 +1638,6 @@ Mỗi frame (~120 FPS):
 
 ---
 
-**Nhóm phát triển**: Nhóm 15
+**Nhóm phát triển**: Nhóm 15 
 **Ngày hoàn thành**: 3/1/2026  
 **Công nghệ**: Python 3.x + Pygame 2.x
