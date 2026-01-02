@@ -5,6 +5,8 @@ from src.screens.home_screen import HomeScreen
 from src.screens.level_select_screen import LevelSelectScreen
 from src.screens.gameplay_screen import GameplayScreen
 
+from src.effects import init_effect_manager, get_effect_manager
+
 from data.save_manager import load_game_data
 from .load_sounds import _load_sound
 from src.config import *
@@ -29,7 +31,11 @@ class GameManager:
         pygame.mixer.music.play(loops=-1)
         
         self.questions_pool = [] 
-        self.question_index = 0     
+        self.question_index = 0
+
+        # effect manager
+        self.effect_manager = init_effect_manager((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.last_update_time = pygame.time.get_ticks()
 
     def switch_screen(self, screen_key):
 
@@ -59,9 +65,19 @@ class GameManager:
         self.active_screen.handle_input(event)
 
     def update(self):
+        # Calculate delta time
+        current_time = pygame.time.get_ticks()
+        dt = (current_time - self.last_update_time) / 1000.0
+        self.last_update_time = current_time
+        
+        # Update effect manager
+        self.effect_manager.update(dt)
+
         self.active_screen.update()
 
     def draw(self, surface):
         self.active_screen.draw(surface)
+
+        self.effect_manager.draw(surface)
         
     

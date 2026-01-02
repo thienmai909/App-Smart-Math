@@ -8,11 +8,11 @@ class HomeScreen(BaseScreen):
         super().__init__(game_manager)
 
         # KHAI BÁO CÁC RECT TẠM THỜI 
-        self.start_button_rect = pygame.Rect(0, 0, 1, 1) 
+        self.start_button_rect = pygame.Rect(0, 0, 1, 1)
         self.assets = self._load_assets()
 
         # CĂN CHỈNH VỊ TRÍ NÚT PLAY CUỐI CÙNG
-        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 180)   
+        self.start_button_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 180)
         
     def _load_assets(self):
         assets = {}
@@ -36,7 +36,11 @@ class HomeScreen(BaseScreen):
 
             if self.start_button_rect.collidepoint(mouse_pos):
                 self.game_manager.sounds['click'].play()
-                self.game_manager.switch_screen("LEVEL") 
+                self.game_manager.effect_manager.fade_transition(
+                    callback=lambda: self.game_manager.switch_screen("LEVEL"),
+                    fade_out_duration=0.2,
+                    fade_in_duration=0.2
+                )
 
     def update(self):
         pass
@@ -46,4 +50,4 @@ class HomeScreen(BaseScreen):
             return
         surface.blit(self.assets['nen_home'], (0, 0))
         surface.blit(self.assets['nutbatdau'], self.start_button_rect.topleft)
-        
+    

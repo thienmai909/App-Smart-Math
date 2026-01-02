@@ -3,6 +3,7 @@ import os
 import time
 import random 
 from src.screens.base_screen import BaseScreen
+from src.effects import HoverEffect, GifAnimation
 from src.config import *
 from data.save_manager import save_game_data 
 
@@ -104,6 +105,16 @@ class GameplayScreen(BaseScreen):
         self.answer_start_y = SCREEN_HEIGHT // 2 + 50 
         self.answer_spacing = 140
         self.PROGRESS_FILL_PADDING = 3 
+
+        # Khởi tạo hiệu ứng hover cho 4 đáp án
+        self.answer_hover_effects = [
+            HoverEffect(scale_factor=1.05, duration=0.15) for _ in range(4)
+        ]
+        
+        # GIF animations cho game over
+        self.victory_gif = None
+        self.defeat_gif = None
+        self.current_gif_animation = None
 
         self.assets = self._load_assets()
 
@@ -316,6 +327,11 @@ class GameplayScreen(BaseScreen):
 
             star_bar_img = pygame.image.load(os.path.join(ASSETS_IMG_DIR, 'thanh_tiendo.png')).convert_alpha()
             assets['thanh_sao_0'] = pygame.transform.scale(star_bar_img, self.STAR_BAR_SIZE)
+            
+            # Lưu đường dẫn GIF để lazy load sau (tránh delay khi khởi động)
+            self.victory_gif_path = os.path.join(ASSETS_IMG_DIR, 'chienthang.gif')
+            self.defeat_gif_path = os.path.join(ASSETS_IMG_DIR, 'thua.gif')
+            self.gifs_loaded = False
 
         except Exception as e:
             print(f"Lỗi tải Assets: {e}")
@@ -370,11 +386,30 @@ class GameplayScreen(BaseScreen):
             self.start_time = time.time()
             self.time_left = self.time_limit
             self.game_manager.question_index += 1
+            
+            # Bắt đầu load GIFs sớm khi đến giữa chừng (để sẵn sàng khi game over)
+            total_questions = len(self.game_manager.questions_pool)
+            if not self.gifs_loaded and self.game_manager.question_index >= total_questions // 2:
+                self._load_gifs()
         else:
             self.game_over = True
             self.best_score = self.score
             self.final_stars = self.calculate_stars(self.score)
             self.save_score(self.score)
+            
+            # Lazy load GIFs lần đầu khi cần
+            if not self.gifs_loaded:
+                self._load_gifs()
+            
+            # Bắt đầu GIF animation dựa trên kết quả
+            if self.is_perfect or self.is_new_best:
+                if self.victory_gif and self.victory_gif.is_loaded:
+                    self.victory_gif.play()
+                    self.current_gif_animation = self.victory_gif
+            else:
+                if self.defeat_gif and self.defeat_gif.is_loaded:
+                    self.defeat_gif.play()
+                    self.current_gif_animation = self.defeat_gif
 
     def process_answer(self, selected_index):
         if selected_index >= 0 and self.game_manager.sounds:
@@ -400,11 +435,39 @@ class GameplayScreen(BaseScreen):
             if self.game_manager.menu.sound_setting:
                 self.game_manager.sounds[key].play()
 
+    def _load_gifs(self):
+        """Lazy load GIF animations khi cần (tránh delay khởi động)."""
+        try:
+            # Tạo GIF objects không auto-load
+            if os.path.exists(self.victory_gif_path):
+                self.victory_gif = GifAnimation(self.victory_gif_path, duration=2.0, scale_size=(400, 400), auto_load=False)
+                self.victory_gif.load_async()  # Load trong background
+            
+            if os.path.exists(self.defeat_gif_path):
+                self.defeat_gif = GifAnimation(self.defeat_gif_path, duration=2.0, scale_size=(400, 400), auto_load=False)
+                self.defeat_gif.load_async()  # Load trong background
+            
+            self.gifs_loaded = True
+            print("GIFs loading asynchronously...")
+        except Exception as e:
+            print(f"Error loading GIFs: {e}")
+            self.gifs_loaded = True  # Đánh dấu đã thử load để không retry
+    
     def update(self):
+        # Tính dt ở đầu để dùng cho toàn bộ update
+        dt = 1.0 / FPS
+        
         if hasattr(self.game_manager, 'menu') and self.game_manager.menu.show_settings:
             self.game_manager.menu.update()
             return
-        if self.game_over: return
+        if self.game_over:
+            # Update GIF animation khi game over
+            if self.current_gif_animation:
+                self.current_gif_animation.update(dt)
+                if not self.current_gif_animation.is_playing:
+                    self.current_gif_animation = None
+            return
+            
         current_time = time.time()
         if self.selected_answer_index is None:
             time_spent = current_time - self.start_time
@@ -412,6 +475,14 @@ class GameplayScreen(BaseScreen):
             if self.time_left <= 0: self.process_answer(-2)
         if self.selected_answer_index is not None and current_time >= self.show_feedback_until:
             self.load_next_question()
+        
+        # Update hover effects cho các nút đáp án
+        if not self.game_over and self.current_question and len(self.button_rects) == 4:
+            mouse_pos = pygame.mouse.get_pos()
+            
+            for i, hover_fx in enumerate(self.answer_hover_effects):
+                is_hovering = self.button_rects[i].collidepoint(mouse_pos) if i < len(self.button_rects) else False
+                hover_fx.update(is_hovering, dt)
 
     def handle_input(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -599,22 +670,35 @@ class GameplayScreen(BaseScreen):
                 rect.center = (pos_x, pos_y)
                 self.button_rects.append(rect)
                 
-                # 3. Vẽ khung đáp án co giãn
+                # 3. Áp dụng HoverEffect để scale khung đáp án
+                hover_fx = self.answer_hover_effects[i]
+                scaled_rect = hover_fx.get_scaled_rect(rect)
+                
+                # Vẽ khung đáp án co giãn với hover effect
                 ans_img = pygame.transform.smoothscale(self.assets['nen_dapan'], (rect.width, rect.height))
+                scaled_ans_img = hover_fx.scale_surface(ans_img)
+                
+                # Thêm màu khi hover
+                if hover_fx.is_hovering:
+                    hover_overlay = pygame.Surface((scaled_rect.width, scaled_rect.height), pygame.SRCALPHA)
+                    # Màu xanh nhạt khi hover
+                    hover_color = (40, 230, 180, 80)  # Xanh với alpha thấp
+                    pygame.draw.rect(hover_overlay, hover_color, hover_overlay.get_rect(), border_radius=23)
+                    scaled_ans_img.blit(hover_overlay, (0, 0))
                 
                 if self.selected_answer_index is not None:
                     color = COLOR_CORRECT if i == self.current_question["correct_index"] else (COLOR_WRONG if i == self.selected_answer_index else None)
                     if color:
-                        overlay = pygame.Surface((rect.width - 8, rect.height - 6), pygame.SRCALPHA)
+                        overlay = pygame.Surface((scaled_rect.width - 8, scaled_rect.height - 6), pygame.SRCALPHA)
                         pygame.draw.rect(overlay, (*color, 155), overlay.get_rect(), border_radius=23)
-                        ans_img.blit(overlay, (4, 3))
+                        scaled_ans_img.blit(overlay, (4, 3))
                 
-                surface.blit(ans_img, rect.topleft)
+                surface.blit(scaled_ans_img, scaled_rect.topleft)
                 
-                # 4. Vẽ nhãn A, B... và phân số
+                # 4. Vẽ nhãn A, B... và phân số với scaled rect
                 label_surf = self.font_medium.render(f"{chr(65+i)}.", True, COLOR_BLACK)
-                surface.blit(label_surf, (rect.left + 25, rect.centery - label_surf.get_height() // 2))
-                self.draw_fraction(surface, opt_text, (rect.centerx + 15, rect.centery), self.font_medium, COLOR_BLACK)
+                surface.blit(label_surf, (scaled_rect.left + 25, scaled_rect.centery - label_surf.get_height() // 2))
+                self.draw_fraction(surface, opt_text, (scaled_rect.centerx + 15, scaled_rect.centery), self.font_medium, COLOR_BLACK)
 
 
         elif self.game_over:
@@ -662,6 +746,12 @@ class GameplayScreen(BaseScreen):
 
             # Vẽ lại nút cài đặt
             surface.blit(self.assets['nutcaidat'], self.settings_button_rect.topleft)
+            
+            # Vẽ GIF animation lên trên cùng
+            if self.current_gif_animation and self.current_gif_animation.is_playing:
+                # Vẽ GIF ở giữa màn hình, phía trên
+                gif_pos = (SCREEN_WIDTH // 2, 200)
+                self.current_gif_animation.draw(surface, gif_pos, center=True)
 
 
         if hasattr(self.game_manager, 'menu') and self.game_manager.menu.show_settings:
